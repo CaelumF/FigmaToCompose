@@ -16,6 +16,8 @@ repositories {
 
 kotlin {
     val serializationVersion = "0.20.0"
+    val ktorVersion = "1.3.2"
+
     val settings: LanguageSettingsBuilder.() -> Unit = {
         languageVersion = "1.4" // possible values: '1.0', '1.1', '1.2', '1.3'
         apiVersion = "1.4" // possible values: '1.0', '1.1', '1.2', '1.3'
@@ -31,8 +33,7 @@ kotlin {
                 implementation(kotlin("stdlib-common"))
                 implementation("com.github.kittinunf.fuel:fuel:2.2.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
-
-
+                implementation("io.ktor:ktor-server-core:$ktorVersion")
             }
         }
         val commonTest by getting {
@@ -42,6 +43,7 @@ kotlin {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+                implementation("io.ktor:ktor-server-core:$ktorVersion")
 
             }
         }
@@ -55,6 +57,8 @@ kotlin {
                 implementation(kotlin("stdlib-jdk8"))
                 implementation("com.beust:klaxon:5.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+                implementation("io.ktor:ktor-server-core:$ktorVersion")
+                implementation("io.ktor:ktor-server-netty:$ktorVersion")
 
             }
         }

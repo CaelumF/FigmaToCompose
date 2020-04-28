@@ -1,13 +1,20 @@
 import com.beust.klaxon.Klaxon
 import com.github.kittinunf.fuel.httpGet
 import java.io.*
+import io.ktor.server.netty.*
+import io.ktor.routing.*
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.receive
+import io.ktor.response.*
+import io.ktor.server.engine.*
 
 fun updateFile(fileUrl: String) {
     val freshFigmaFile = "https://api.figma.com/v1/files/$fileUrl"
         .httpGet()
         .header("X-Figma-Token", tokeyboi)
         .responseString()
-    Klaxon().parseJsonObject(Klaxon().toReader(StringBufferInputStream(freshFigmaFile.third.get())))
+//    Klaxon().parseJsonObject(Klaxon().toReader(StringBufferInputStream(freshFigmaFile.third.get())))
     val parsedFigmaFile = Klaxon().parse<FigmaFile>(StringBufferInputStream(freshFigmaFile.third.get()))!!
     val fos: FileOutputStream = FileOutputStream(File(fileUrl))
     val os = ObjectOutputStream(fos)
@@ -20,17 +27,28 @@ fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(file
 
 //Jit.si
 fun main() {
-    val updateFileCache = true
-    val fileUrl = "LmoqgIHqKw6WCuNAnBDNOw"
-    if (updateFileCache) {
-        updateFile(fileUrl)
-    }
-    val b = readFromFile(fileUrl)
-    val devtest = b.document?.children?.get(0)?.children?.filter { it.name == "Dev test frame" }?.get(0)
-    val r = makeCompose(devtest!!) {
-        fillMaxSize()
-    }.removeNoAffectPatterns()
-    println(r)
+//    val updateFileCache = true
+//    val fileUrl = "LmoqgIHqKw6WCuNAnBDNOw"
+//    if (updateFileCache) {
+//        updateFile(fileUrl)
+//    }
+//    val b = readFromFile(fileUrl)
+//    val devtest = b.document?.children?.get(0)?.children?.filter { it.name == "Dev test frame" }?.get(0)
+//    val r = makeCompose(devtest!!) {
+//        fillMaxSize()
+//    }.removeNoAffectPatterns()
+
+
+    embeddedServer(Netty, 8080) {
+        routing {
+            get("/") {
+                val nodeJsonToConvert = call.receive<String>()
+                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(freshFigmaFile.third.get()))!!
+                val output = makeCompose(parsedFigmaFile)
+                call.respondText(output, ContentType.Text.Plain)
+            }
+        }
+    }.start(wait = true)
 }
 
 fun RectangleNode.toString(): String {
@@ -95,6 +113,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
         total += ".drawBackground(${color.toComposeColor()})"
     }
 }
+
 fun RGBA.toComposeColor() = "Color(${this.r}f, ${this.g}f, ${this.b}f, ${this.a}f)"
 
 private fun String.removeNoAffectPatterns() = this.apply {
@@ -127,9 +146,9 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
         }
         node is TextNode -> with(node) {
             """
-                ${node.characters?.let {
-                    "Text".args(it, "color = ${node.sty}")
-                }}
+                ${node.characters?.let { text ->
+                "Text".args(text)
+            }}
             """.trimIndent()
         }
         else -> ""
