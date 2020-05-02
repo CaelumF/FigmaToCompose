@@ -6,6 +6,7 @@ import io.ktor.routing.*
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.receive
+import io.ktor.request.receiveText
 import io.ktor.response.*
 import io.ktor.server.engine.*
 
@@ -39,13 +40,20 @@ fun main() {
 //    }.removeNoAffectPatterns()
 
 
-    embeddedServer(Netty, 8080) {
+    embeddedServer(Netty, 9020) {
         routing {
-            get("/") {
-                val nodeJsonToConvert = call.receive<String>()
-                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(freshFigmaFile.third.get()))!!
-                val output = makeCompose(parsedFigmaFile)
-                call.respondText(output, ContentType.Text.Plain)
+            post("/") {
+                val nodeJsonToConvert = call.receive<String>();
+                try {
+                    val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
+                    val output = makeCompose(parsedFigmaFile) .removeNoAffectPatterns()
+                    call.respondText(output, ContentType.Text.Plain)
+                    println(output)
+                } catch (e: Exception) {
+                    println("We rockin' an axeception: ${e}")
+                    e.printStackTrace()
+                }
+
             }
         }
     }.start(wait = true)
@@ -98,6 +106,10 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
         total += ".fillMaxHeight()"
     }
 
+    fun none() {
+        total += ".none()"
+    }
+
     enum class AlignmentOption() {
         Start,
         End,
@@ -122,7 +134,7 @@ private fun String.removeNoAffectPatterns() = this.apply {
     this.replace(Regex(".*horizontalBias = NaNf"), "")
 }
 
-fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Unit): String {
+fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Unit = { none() }): String {
     val modifier = Modifier(extraModifiers)
     mods.invoke(modifier)
     return modifier.total
@@ -135,7 +147,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
 //    val parentLayout: LayoutMixin? = (if (node.parent is LayoutMixin) node.parent else null) as LayoutMixin?
     return when {
-        node is DefaultFrameMixin && node.layoutMode != null -> autoLayoutToString(node, extraModifiers)
+        node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToString(node, extraModifiers)
 
         node is DefaultFrameMixin -> frameToString(node, extraModifiers)
 
@@ -147,7 +159,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
         node is TextNode -> with(node) {
             """
                 ${node.characters?.let { text ->
-                "Text".args(text)
+                "Text".args("\"$text\"")
             }}
             """.trimIndent()
         }
@@ -248,13 +260,15 @@ private fun horizontalConstraints(
     childNode: BaseNodeMixin
 ): String {
     return """
-        ${when ((child.second as ConstraintMixin).constraints.horizontal) {
+        ${when ((child.second as ConstraintMixin).constraints?.horizontal) {
         //Left constrained to left not necessary as this is default
+        "MIN",
         "LEFT" -> """
                                 left constrainTo parent.left
                                 width = ${"valueFixed".args("${childLayout.width}.dp")}
                                 left.margin = ${childNode.localX(node)}.dp
                             """.trimIndent()
+        "MAX",
         "RIGHT" -> """
                                 right constrainTo parent.right
                                 width = ${"valueFixed".args("${childLayout.width}.dp")}
@@ -270,7 +284,8 @@ private fun horizontalConstraints(
                 .toDouble() / (node.width.toDouble() - childLayout.width.toDouble())}f
             """.trimIndent()
         //Margins
-        "LEFT_RIGHT" -> """
+        "STRETCH",
+        "LEFT_RIGHT"  -> """
                             left constrainTo parent.left
                             left.margin = ${childNode.localX(node)}.dp
                             right constrainTo parent.right
@@ -297,13 +312,15 @@ private fun verticalConstraints(
     childNode: BaseNodeMixin
 ): String {
     return """
-        ${when ((child.second as ConstraintMixin).constraints.vertical) {
+        ${when ((child.second as ConstraintMixin).constraints?.vertical) {
         //Left constrained to left not necessary as this is default
+        "MIN",
         "TOP" -> """
                                 top constrainTo parent.top
                                 height = ${"valueFixed".args("${childLayout.height}.dp")}
                                 top.margin = ${childNode.localY(node)}.dp
                             """.trimIndent()
+        "MAX",
         "BOTTOM" -> """
                                 bottom constrainTo parent.bottom
                                 height = ${"valueFixed".args("${childLayout.height}.dp")}
@@ -319,6 +336,7 @@ private fun verticalConstraints(
                 .toDouble() / (node.height.toDouble() - childLayout.height.toDouble())}f
             """.trimIndent()
         //Margins
+        "STRETCH",
         "TOP_BOTTOM" -> """
                             top constrainTo parent.top
                             bottom constrainTo parent.bottom

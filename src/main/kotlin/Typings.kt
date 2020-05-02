@@ -393,7 +393,7 @@ open class VectorSegment(
 //@Serializable
 open class VectorRegion(
     val windingRule: String /* "NONZERO" | "EVENODD" */,
-    val loops: Array<Array<Double>>,
+    val loops: List<List<Integer>>,
 
     ) : Serializable
 
@@ -585,7 +585,7 @@ class GroupNodeImpl(
 //    override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
     override val opacity: Double = 1.0,
@@ -597,17 +597,28 @@ class GroupNodeImpl(
 //    override val backgrounds: Array<Any>? = null,
     override val backgroundStyleId: String? = null,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null
+    override val reactions: Array<Reaction>? = null,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 ) : Serializable, GroupNode {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 
@@ -623,7 +634,7 @@ interface ChildrenMixin {
 }
 
 interface ConstraintMixin {
-    val constraints: Constraints
+    val constraints: Constraints?
 }
 
 interface NullableLayoutMixin {
@@ -819,13 +830,13 @@ open class FrameNode(
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
     override val children: Array<BaseNodeMixin>?,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //    override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
 
     override val constrainProportions: Boolean? = null,
@@ -870,17 +881,28 @@ open class FrameNode(
     override val overlayPositionType: String? = null,
 //    override val overlayBackground: Any? = null,
     override val overlayBackgroundInteraction: String? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 
     ) : Serializable, DefaultFrameMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 //
 ////@Serializable
@@ -904,21 +926,32 @@ open class SliceNode(
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 //    override val exportSettings: Array<Any>? = null,
 ) : Serializable, BaseNodeMixin, SceneNodeMixin, LayoutMixin, ExportMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -930,13 +963,13 @@ open class RectangleNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //    override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -963,16 +996,27 @@ open class RectangleNode(
     override val bottomRightRadius: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin, RectangleCornerMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -984,13 +1028,13 @@ open class LineNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //  override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1011,16 +1055,27 @@ open class LineNode(
     override val strokeStyleId: String? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -1034,13 +1089,13 @@ open class EllipseNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //  override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1063,17 +1118,28 @@ open class EllipseNode(
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -1087,13 +1153,13 @@ open class PolygonNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //  override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1116,17 +1182,28 @@ open class PolygonNode(
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -1141,13 +1218,13 @@ open class StarNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //  override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1170,25 +1247,36 @@ open class StarNode(
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
 open class VectorNode(
     override val type: String = "VECTOR"/* "VECTOR" */,
 
-    override val constraints: Constraints,
-    val absoluteBoundingBox: Rect,
+    override val constraints: Constraints? = null,
+    val absoluteBoundingBox: Rect? = null,
     val vectorNetwork: VectorNetwork? = null,
     val vectorPaths: Array<VectorPath>? = null,
 //    val handleMirroring: Any = "NONE" /* "NONE" | "ANGLE" | "ANGLE_AND_LENGTH" | Any */,
@@ -1223,16 +1311,37 @@ open class VectorNode(
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
+//    override val x: Double
+//        get() = absoluteBoundingBox.x
+//    override val y: Double
+//        get() = absoluteBoundingBox.y
+//    override val rotation: Double = 0.0
+//    override val width: Double
+//        get() = absoluteBoundingBox.width
+//    override val height: Double
+//        get() = absoluteBoundingBox.height
+//    constructor()
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -1274,13 +1383,13 @@ open class TextNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //  override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+//    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1301,18 +1410,23 @@ open class TextNode(
     override val strokeStyleId: String? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null,
+    override val x: Double,
+    override val y: Double,
+    override val rotation: Double,
+    override val width: Double,
+    override val height: Double,
 
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin {
-    override val x: Double
-        get() = absoluteBoundingBox.x
-    override val y: Double
-        get() = absoluteBoundingBox.y
-    override val rotation: Double = 0.0
-    override val width: Double
-        get() = absoluteBoundingBox.width
-    override val height: Double
-        get() = absoluteBoundingBox.height
+//    override val x: Double
+//        get() = absoluteBoundingBox.x
+//    override val y: Double
+//        get() = absoluteBoundingBox.y
+//    override val rotation: Double = 0.0
+//    override val width: Double
+//        get() = absoluteBoundingBox.width
+//    override val height: Double
+//        get() = absoluteBoundingBox.height
 }
 
 //@Serializable
@@ -1329,14 +1443,14 @@ open class ComponentNode(
     override val removed: Boolean? = null,
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
-    override val children: Array<BaseNodeMixin>?,
-    override val constraints: Constraints,
+    override val children: Array<BaseNodeMixin>? = null,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //  override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1380,17 +1494,28 @@ open class ComponentNode(
     override val overlayPositionType: String? = null,
 //    override val overlayBackground: Any? = null,
     override val overlayBackgroundInteraction: String? = null,
-    override val cornerRadius: Double? = 0.0
-) : Serializable, DefaultFrameMixin {
+    override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
+) : Serializable, DefaultFrameMixin{
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -1406,12 +1531,12 @@ open class InstanceNode(
     override val visible: Boolean? = null,
     override val locked: Boolean? = null,
     override val children: Array<BaseNodeMixin>?,
-    override val constraints: Constraints,
+    override val constraints: Constraints? = null,
 //    override val absoluteTransform: Any? = null,
 //    override val relativeTransform: Triple<Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1454,18 +1579,31 @@ open class InstanceNode(
     override val DoubleOfFixedChildren: Double? = null,
     override val overlayPositionType: String? = null,
 //    override val overlayBackground: Any? = null,
-    override val overlayBackgroundInteraction: String? = null, override val cornerRadius: Double? = 0.0,
+    override val overlayBackgroundInteraction: String? = null,
+    override val cornerRadius: Double? = 0.0,
+
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 
     ) : Serializable, DefaultFrameMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
@@ -1486,7 +1624,7 @@ open class BooleanOperationNode(
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >? = null,
 
-    val absoluteBoundingBox: Rect,
+    val absoluteBoundingBox: Rect? = null,
 
     override val constrainProportions: Boolean? = null,
     override val layoutAlign: String? = null,
@@ -1509,17 +1647,28 @@ open class BooleanOperationNode(
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    x: Double? = null,
+    y: Double? = null,
+    rotation: Double? = null,
+    width: Double? = null,
+    height: Double? = null,
+    val realx: Double? = x,
+    val realy: Double? = y,
+    val realrotation: Double? = rotation,
+    val realwidth: Double? = width,
+    val realheight: Double? = height,
 
     ) : Serializable, DefaultShapeMixin, ChildrenMixin, CornerMixin {
+
     override val x: Double
-        get() = absoluteBoundingBox.x
+        get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
     override val y: Double
-        get() = absoluteBoundingBox.y
+        get() = realy ?: absoluteBoundingBox?.y ?: throw kotlin.Exception("Can't derive from anything")
     override val rotation: Double = 0.0
     override val width: Double
-        get() = absoluteBoundingBox.width
+        get() = realwidth ?: absoluteBoundingBox?.width ?: throw kotlin.Exception("Can't derive from anything")
     override val height: Double
-        get() = absoluteBoundingBox.height
+        get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
 //@Serializable
