@@ -128,11 +128,11 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
 
 fun RGBA.toComposeColor() = "Color(${this.r}f, ${this.g}f, ${this.b}f, ${this.a}f)"
 
-private fun String.removeNoAffectPatterns() = this.apply {
+private fun String.removeNoAffectPatterns(): String =
     //NaNf biases mean the child is the same width as the parent so the bias has no affect
     this.replace(Regex(".*verticalBias = NaNf"), "")
-    this.replace(Regex(".*horizontalBias = NaNf"), "")
-}
+        .replace(Regex(".*horizontalBias = NaNf"), "")
+
 
 fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Unit = { none() }): String {
     val modifier = Modifier(extraModifiers)
