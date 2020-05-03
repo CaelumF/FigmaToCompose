@@ -1,5 +1,8 @@
 <h2>Convert to Jetpack Compose</h2>
-
+<h2>To generarate layout for manually created smaller components:</h2>
+<p>Use recursion limit with the intended depth + 1 and replace deepest children manually with own implementation </p>
+<h3>To genera</h3>
+<p>Recursion limit: <input id="recLimit" value="0" type="number"></p>
 <button id="create">Generarate</button>
 <button id="cancel">Cancel</button>
 <script>
@@ -23,7 +26,7 @@ async function postData(url = '', data = {}) {
     // Default options are marked with *
     const response = await fetch(url, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'no-cors', // no-cors, *cors, same-origin
+        mode: 'cors', // no-cors, *cors, same-origin
         // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         // credentials: 'same-origin', // include, *same-origin, omit
         headers: {
@@ -38,7 +41,7 @@ async function postData(url = '', data = {}) {
 
 window.onmessage = async (event) => {
     if (event.data.pluginMessage.type === 'network') {
-        postData("http://localhost:9020", event.data.pluginMessage.data)
+        postData("https://192.168.0.102:9020/", event.data.pluginMessage.data)
         .then(response => {
             console.log("We got back:" +  response)
         });
