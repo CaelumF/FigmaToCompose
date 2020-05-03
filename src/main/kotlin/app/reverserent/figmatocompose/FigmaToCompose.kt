@@ -1,14 +1,34 @@
+package app.reverserent.figmatocompose
+
+import BaseNodeMixin
+import ConstraintMixin
+import DefaultFrameMixin
+import FigmaFile
+import GeometryMixin
+import LayoutMixin
+import RGBA
+import RectangleNode
+import SolidPaint
+import TextNode
 import com.beust.klaxon.Klaxon
 import com.github.kittinunf.fuel.httpGet
-import java.io.*
-import io.ktor.server.netty.*
-import io.ktor.routing.*
-import io.ktor.application.*
-import io.ktor.http.*
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.CallLogging
+import io.ktor.features.DefaultHeaders
+import io.ktor.http.ContentType
 import io.ktor.request.receive
-import io.ktor.request.receiveText
-import io.ktor.response.*
-import io.ktor.server.engine.*
+import io.ktor.response.respondText
+import io.ktor.routing.post
+import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.jetty.Jetty
+import tokeyboi
+import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.StringSelection
+import java.io.*
 
 fun updateFile(fileUrl: String) {
     val freshFigmaFile = "https://api.figma.com/v1/files/$fileUrl"
@@ -26,45 +46,39 @@ fun updateFile(fileUrl: String) {
 
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
-//Jit.si
-fun main() {
-//    val updateFileCache = true
-//    val fileUrl = "LmoqgIHqKw6WCuNAnBDNOw"
-//    if (updateFileCache) {
-//        updateFile(fileUrl)
-//    }
-//    val b = readFromFile(fileUrl)
-//    val devtest = b.document?.children?.get(0)?.children?.filter { it.name == "Dev test frame" }?.get(0)
-//    val r = makeCompose(devtest!!) {
-//        fillMaxSize()
-//    }.removeNoAffectPatterns()
+fun Application.main() {
+    install(DefaultHeaders)
+    install(CallLogging)
 
+    routing {
+        post("/") {
+            val nodeJsonToConvert = call.receive<String>();
+            try {
+                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
+                val output = makeCompose(parsedFigmaFile).removeNoAffectPatterns()
+                call.respondText(output, ContentType.Text.Plain)
+                println(output)
 
-    embeddedServer(Netty, 9020) {
-        routing {
-            post("/") {
-                val nodeJsonToConvert = call.receive<String>();
-                try {
-                    val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
-                    val output = makeCompose(parsedFigmaFile) .removeNoAffectPatterns()
-                    call.respondText(output, ContentType.Text.Plain)
-                    println(output)
-                } catch (e: Exception) {
-                    println("We rockin' an axeception: ${e}")
-                    e.printStackTrace()
-                }
+                //Set clipboard to new output
+                val selection = StringSelection(output)
+                val clipboard: Clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
+                clipboard.setContents(selection, selection)
 
+            } catch (e: Exception) {
+                println("We rockin' an axeception: $e")
+                e.printStackTrace()
             }
         }
-    }.start(wait = true)
+    }
 }
+
 
 fun RectangleNode.toString(): String {
     return ""
 }
 
 class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
-    var total: String = "modifier = Modifier"
+    var total: String = "modifier = app.reverserent.figmatocompose.Modifier"
 
     init {
         modifiersFromParent?.invoke(this)
@@ -147,13 +161,24 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
 //    val parentLayout: LayoutMixin? = (if (node.parent is LayoutMixin) node.parent else null) as LayoutMixin?
     return when {
-        node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToString(node, extraModifiers)
+        node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToString(
+            node,
+            extraModifiers
+        )
 
-        node is DefaultFrameMixin -> frameToString(node, extraModifiers)
+        node is DefaultFrameMixin -> frameToString(
+            node,
+            extraModifiers
+        )
 
         node is RectangleNode -> with(node) {
             """
-               Box(${Mods { preferredSize(width, height) }} ${getStyleMods(this)} ){} 
+               Box(${app.reverserent.figmatocompose.Mods {
+                preferredSize(
+                    width,
+                    height
+                )
+            }} ${app.reverserent.figmatocompose.getStyleMods(this)} ){} 
             """.trimIndent()
         }
         node is TextNode -> with(node) {
@@ -170,15 +195,15 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
 fun getStyleMods(node: BaseNodeMixin): String {
     return when (node) {
         is GeometryMixin -> with(node) {
-            Mods() {
-                total = "+ Modifier"
+            app.reverserent.figmatocompose.Mods() {
+                total = "+ app.reverserent.figmatocompose.Modifier"
                 node.fills?.forEach { fill ->
                     when (fill) {
                         is SolidPaint -> drawBackground(fill.color)
                     }
                 }
                 //If this is pointless just do nothing
-                if (total == "+ Modifier") total = ""
+                if (total == "+ app.reverserent.figmatocompose.Modifier") total = ""
             }
         }
         else -> ""
@@ -212,7 +237,9 @@ private fun frameToString(node: DefaultFrameMixin, extraModifiers: (Modifier.() 
 
 
             "ConstraintLayout".args(
-                "${Mods(extraModifiers) { drawOpacity(1.0f) }} ${getStyleMods(this)}",
+                "${app.reverserent.figmatocompose.Mods(extraModifiers) { drawOpacity(1.0f) }} ${app.reverserent.figmatocompose.getStyleMods(
+                    this
+                )}",
                 "constraintSet = ${"ConstraintSet".body(
                     """
                     // Tags for each constrained
@@ -228,8 +255,20 @@ private fun frameToString(node: DefaultFrameMixin, extraModifiers: (Modifier.() 
                         """
                            ${"child${index}.apply".body(
                             """
-                            ${horizontalConstraints(index, child, childLayout, node, childNode)}
-                            ${verticalConstraints(index, child, childLayout, node, childNode)}
+                            ${app.reverserent.figmatocompose.horizontalConstraints(
+                                index,
+                                child,
+                                childLayout,
+                                node,
+                                childNode
+                            )}
+                            ${app.reverserent.figmatocompose.verticalConstraints(
+                                index,
+                                child,
+                                childLayout,
+                                node,
+                                childNode
+                            )}
                             
                            """.trimIndent()
                         )} 
@@ -240,9 +279,9 @@ private fun frameToString(node: DefaultFrameMixin, extraModifiers: (Modifier.() 
                 )}"
             ).body(
                 """
-               // Constraint layout body
+               // Constraint layout app.reverserent.figmatocompose.body
                     ${children?.mapIndexed { index, child ->
-                    makeCompose(child) {
+                    app.reverserent.figmatocompose.makeCompose(child) {
                         tag("${index}_${child.name}")
                     }
                 }?.joinToString("\n")}
@@ -285,7 +324,7 @@ private fun horizontalConstraints(
             """.trimIndent()
         //Margins
         "STRETCH",
-        "LEFT_RIGHT"  -> """
+        "LEFT_RIGHT" -> """
                             left constrainTo parent.left
                             left.margin = ${childNode.localX(node)}.dp
                             right constrainTo parent.right
@@ -359,7 +398,11 @@ private fun verticalConstraints(
 private fun autoLayoutToString(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
     return when (node.layoutMode!!) {
         "VERTICAL" -> """
-            Column(${Mods(extraModifiers) { if (node.counterAxisSizingMode == "FIXED") preferredWidth(node.width) }} ${getStyleMods(
+            Column(${Mods(extraModifiers) {
+            if (node.counterAxisSizingMode == "FIXED") preferredWidth(
+                node.width
+            )
+        }} ${getStyleMods(
             node
         )}) {
             ${node.children?.joinToString("\n") { child ->
@@ -379,7 +422,11 @@ private fun autoLayoutToString(node: DefaultFrameMixin, extraModifiers: (Modifie
         }
             """.trimIndent()
         "HORIZONTAL" -> """
-                Row(${Mods(extraModifiers) { if (node.counterAxisSizingMode == "FIXED") preferredHeight(node.height) }}) {
+                Row(${Mods(extraModifiers) {
+            if (node.counterAxisSizingMode == "FIXED") preferredHeight(
+                node.height
+            )
+        }}) {
                     ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {

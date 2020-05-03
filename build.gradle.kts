@@ -27,26 +27,25 @@ kotlin {
         progressiveMode = true // false by default
     }
     sourceSets {
-        val commonMain by getting {
-            languageSettings.apply(settings)
-            dependencies {
-                implementation(kotlin("stdlib-common"))
-                implementation("com.github.kittinunf.fuel:fuel:2.2.2")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
-                implementation("io.ktor:ktor-server-core:$ktorVersion")
-            }
-        }
-        val commonTest by getting {
-            languageSettings.apply(settings)
-
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
-                implementation("io.ktor:ktor-server-core:$ktorVersion")
-
-            }
-        }
+//        val commonMain by getting {
+//            languageSettings.apply(settings)
+//            dependencies {
+//                implementation(kotlin("stdlib-common"))
+//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+//                implementation("io.ktor:ktor-server-core:$ktorVersion")
+//            }
+//        }
+//        val commonTest by getting {
+//            languageSettings.apply(settings)
+//
+//            dependencies {
+//                implementation(kotlin("test-common"))
+//                implementation(kotlin("test-annotations-common"))
+//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+//                implementation("io.ktor:ktor-server-core:$ktorVersion")
+//
+//            }
+//        }
 
         // Default source set for JVM-specific sources and dependencies:
         jvm().compilations["main"].defaultSourceSet {
@@ -55,10 +54,13 @@ kotlin {
             kotlin.srcDir("src/main/kotlin")
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
+                implementation("com.github.kittinunf.fuel:fuel:2.2.2")
                 implementation("com.beust:klaxon:5.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
                 implementation("io.ktor:ktor-server-core:$ktorVersion")
-                implementation("io.ktor:ktor-server-netty:$ktorVersion")
+//                implementation("io.ktor:ktor-server-netty:$ktorVersion")
+                implementation("io.ktor:ktor-server-jetty:$ktorVersion")
+                implementation("io.ktor:ktor-network-tls:$ktorVersion")
 
             }
         }
@@ -75,8 +77,15 @@ kotlin {
         }
     }
 }
+//task generateJks(type: JavaExec, dependsOn: 'classes') {
+//    classpath = sourceSets.main.runtimeClasspath
+//    main = 'io.ktor.samples.http2.CertificateGenerator'
+//}
+//
+//getTasksByName("run", false).first().dependsOn('generateJks')
 
 tasks {
+//    fun generateJks
 //    compileKotlin {
 //        kotlinOptions.jvmTarget = "1.8"
 //    }
