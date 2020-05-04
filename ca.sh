@@ -11,7 +11,7 @@ openssl req -x509 -new -nodes -key myCA.key -sha256 -days 825 -out myCA.pem
 # Create CA-signed certs
 ######################
 
-NAME=192-168-0-102.sslip.io
+NAME=sslip.io
 # Generate private key
 [[ -e $NAME.key ]] || openssl genrsa -out $NAME.key 2048
 # Create certificate-signing request
@@ -29,4 +29,9 @@ EOF
 # Create the signed certificate
 openssl x509 -req -in $NAME.csr -CA myCA.pem -CAkey myCA.key -CAcreateserial \
 	-out $NAME.crt -days 1825 -sha256 -extfile $NAME.ext
-
+#Combine to pem with private and public
+cat myCA.key myCA.pem > combined.pem
+#Convert combined to p12
+openssl pkcs12 -export -in combined.pem -out cert.p12
+#Convert p12 to jks
+keytool -importkeystore -srckeystore cert.p12 -srcstoretype pkcs12 -destkeystore cert.jks
