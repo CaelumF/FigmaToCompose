@@ -28,7 +28,6 @@ function getAllProperties(obj: BaseNode) {
             // debugger;
             try {
                 values[key] = curr[key]
-                // @ts-ignore
                 curr.id = objID
             } catch (e) {
                 console.log("Not adding " + key)
@@ -45,6 +44,7 @@ function getAllProperties(obj: BaseNode) {
                     childrenExpanded.push(getAllProperties(child1));
                 }
             }
+            // @ts-ignore
             values.children = childrenExpanded
         }
     } while (curr = Object.getPrototypeOf(curr))
@@ -55,7 +55,6 @@ function getAllProperties(obj: BaseNode) {
 figma.ui.onmessage = msg => {
     if (msg.type == 'Convert to Compose') {
         let allProps = getAllProperties(figma.currentPage.selection[0])
-        debugger;
         figma.ui.postMessage({type: "network", data: JSON.stringify(allProps)})
         console.log("allProps:", allProps);
         figma.closePlugin();

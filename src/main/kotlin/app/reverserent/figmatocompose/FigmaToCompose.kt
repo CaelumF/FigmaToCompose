@@ -20,6 +20,7 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
 import io.ktor.request.receive
 import io.ktor.response.respondText
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
@@ -51,7 +52,7 @@ fun Application.main() {
     install(CallLogging)
 
     routing {
-        post("/") {
+        get("/") {
             val nodeJsonToConvert = call.receive<String>();
             try {
                 val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!

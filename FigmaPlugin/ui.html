@@ -25,26 +25,33 @@ document.getElementById('cancel').onclick = () => {
 async function postData(url = '', data = {}) {
     // Default options are marked with *
     const response = await fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: '*cors', // no-cors, *cors, same-origin
         // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         // credentials: 'same-origin', // include, *same-origin, omit
+        'Access-Control-Allow-Origin:' : '*',
         headers: {
             'Content-Type': 'application/json'
         },
-        // redirect: 'follow', // manual, *follow, error
-        // referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        app.reverserent.figmatocompose.body: data // app.reverserent.figmatocompose.body data type must match "Content-Type" header
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data) // app.reverserent.figmatocompose.body data type must match "Content-Type" header
     });
     return response.json(); // parses JSON response into native JavaScript objects
 }
 
 window.onmessage = async (event) => {
     if (event.data.pluginMessage.type === 'network') {
-        postData("https://192.168.0.102:9020/", event.data.pluginMessage.data)
-        .then(response => {
-            console.log("We got back:" +  response)
-        });
+        var request = new XMLHttpRequest()
+        // This link has random lorem ipsum text
+        request.open('GET', 'http://localhost:9020')
+        request.responseType = 'text'
+        request.onload = () => {
+            // window.parent.postMessage({pluginMessage: request.response}, '*')
+            console.log("We got " + request.response)
+        };
+        request.send(event.data.pluginMessage.data)
+
     }
 }
 </script>
