@@ -6,11 +6,9 @@
 //    "EXTERNAL_DELEGATION"
 //)
 
-import com.beust.klaxon.TypeAdapter
+import app.reverserent.figmatocompose.RGBA
 import com.beust.klaxon.TypeFor
 import java.io.Serializable
-import kotlin.js.*
-import kotlin.reflect.KClass
 
 //val figma: PluginAPI? = null,
 
@@ -138,15 +136,6 @@ open class RGB(
     val r: Double = 1.0,
     val g: Double = 1.0,
     val b: Double = 1.0,
-
-    ) : Serializable
-
-//@Serializable
-open class RGBA(
-    val r: Double = 1.0,
-    val g: Double = 1.0,
-    val b: Double = 1.0,
-    val a: Double = 1.0,
 
     ) : Serializable
 

@@ -1,32 +1,19 @@
 package app.reverserent.figmatocompose
 
 import BaseNodeMixin
-import ConstraintMixin
 import DefaultFrameMixin
 import FigmaFile
 import GeometryMixin
 import LayoutMixin
-import RGBA
 import RectangleNode
 import SolidPaint
 import TextNode
 import com.beust.klaxon.Klaxon
 import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.Application
-import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.DefaultHeaders
-import io.ktor.http.ContentType
-import io.ktor.request.receive
-import io.ktor.request.receiveText
-import io.ktor.response.respondText
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.put
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.jetty.Jetty
 import tokeyboi
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -164,30 +151,51 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
 //    val parentLayout: LayoutMixin? = (if (node.parent is LayoutMixin) node.parent else null) as LayoutMixin?
     return when {
-        node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToString(
+        node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToComposeRowColumn(
             node,
             extraModifiers
         )
 
-        node is DefaultFrameMixin -> frameToString(
+        node is DefaultFrameMixin -> frameToComposeConstraintsLayout(
             node,
             extraModifiers
         )
 
         node is RectangleNode -> with(node) {
             """
-               Box(${app.reverserent.figmatocompose.Mods {
+               Box(${Mods(extraModifiers) {
                 preferredSize(
                     width,
                     height
                 )
-            }} ${app.reverserent.figmatocompose.getStyleMods(this)} ){} 
+            }} ${getStyleMods(this)} ){} 
             """.trimIndent()
         }
         node is TextNode -> with(node) {
             """
                 ${node.characters?.let { text ->
-                "Text".args("\"$text\"")
+                "Text".args("\"$text\"", Mods(extraModifiers) {
+                    preferredWidth(node.width)
+                    preferredHeight(node.height)
+                },
+                    "style = currentTextStyle().copy".args(
+                        "color = " + when (this.fills?.get(0)?.type) {
+                            "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
+                                this.color.toComposeColor()
+                            }
+                            else -> "Color.BLACK"
+                        },
+                        //TODO: RTL text support
+                        "textAlign = " + when(this.textAlignHorizontal) {
+                            "LEFT" -> "TextAlign.Left"
+                            "RIGHT" -> "TextAlign.Right"
+                            "CENTER" -> "TextAlign.Center"
+                            "JUSTIFIED" -> "TextAlign.Justify"
+
+                            else -> throw Exception("Horizontal text alignment type ${this.textAlignHorizontal} is new to me")
+                        }
+                    ),
+                )
             }}
             """.trimIndent()
         }
@@ -198,27 +206,20 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
 fun getStyleMods(node: BaseNodeMixin): String {
     return when (node) {
         is GeometryMixin -> with(node) {
-            app.reverserent.figmatocompose.Mods() {
-                total = "+ app.reverserent.figmatocompose.Modifier"
+            Mods() {
+                total = "+ Modifier"
                 node.fills?.forEach { fill ->
                     when (fill) {
                         is SolidPaint -> drawBackground(fill.color)
                     }
                 }
                 //If this is pointless just do nothing
-                if (total == "+ app.reverserent.figmatocompose.Modifier") total = ""
+                if (total == "+ Modifier") total = ""
             }
         }
         else -> ""
     }
 }
-
-private fun String.args(vararg parameters: String) = "${this}(${parameters.joinToString(", ")})"
-private fun String.body(body: String) = """
-    $this {
-        ${body.split("\n").joinToString("\n    ")}
-    }
-    """.trimIndent()
 
 private fun Element(name: String, vararg parameters: String, body: () -> String) =
     Element(name, (parameters).joinToString(", "), body.invoke())
@@ -229,227 +230,6 @@ private fun Element(name: String, parameters: String, body: String) = """
     }
 """.trimIndent()
 
-//TODO When to Fill Max Size
-private fun frameToString(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
-    return with(node) {
-        if (children != null) {
-            //TODO: Refactor with knowledge that all ConstraintMixins are also LayoutMixins
-            val childrenTagPairs = children!!
-                .filter { it is ConstraintMixin }
-                .map { Pair(it.name ?: it.id ?: throw Exception("No id!"), it) }
-
-
-            "ConstraintLayout".args(
-                "${app.reverserent.figmatocompose.Mods(extraModifiers) { drawOpacity(1.0f) }} ${app.reverserent.figmatocompose.getStyleMods(
-                    this
-                )}",
-                "constraintSet = ${"ConstraintSet".body(
-                    """
-                    // Tags for each constrained
-                    ${childrenTagPairs.mapIndexed() { index: Int, pair: Pair<String, BaseNodeMixin> -> "val child${index} = tag(\"${index}_${pair.first}\") " }
-                        .joinToString("\n")}
-                                           
-                    // --
-                                           
-                    // Constraints
-                    ${childrenTagPairs.mapIndexed { index: Int, child: Pair<String, BaseNodeMixin> ->
-                        val childNode = child.second as BaseNodeMixin
-                        val childLayout = child.second as LayoutMixin
-                        """
-                           ${"child${index}.apply".body(
-                            """
-                            ${app.reverserent.figmatocompose.horizontalConstraints(
-                                index,
-                                child,
-                                childLayout,
-                                node,
-                                childNode
-                            )}
-                            ${app.reverserent.figmatocompose.verticalConstraints(
-                                index,
-                                child,
-                                childLayout,
-                                node,
-                                childNode
-                            )}
-                            
-                           """.trimIndent()
-                        )} 
-                        """.trimIndent()
-
-                    }.joinToString("\n")}
-                """.trimIndent()
-                )}"
-            ).body(
-                """
-               // Constraint layout app.reverserent.figmatocompose.body
-                    ${children?.mapIndexed { index, child ->
-                    app.reverserent.figmatocompose.makeCompose(child) {
-                        tag("${index}_${child.name}")
-                    }
-                }?.joinToString("\n")}
-                """.trimIndent()
-            )
-        } else "Box(){}"
-    }
-}
-
-private fun horizontalConstraints(
-    index: Int,
-    child: Pair<String, BaseNodeMixin>,
-    childLayout: LayoutMixin,
-    node: DefaultFrameMixin,
-    childNode: BaseNodeMixin
-): String {
-    return """
-        ${when ((child.second as ConstraintMixin).constraints?.horizontal) {
-        //Left constrained to left not necessary as this is default
-        "MIN",
-        "LEFT" -> """
-                                left constrainTo parent.left
-                                width = ${"valueFixed".args("${childLayout.width}.dp")}
-                                left.margin = ${childNode.localX(node)}.dp
-                            """.trimIndent()
-        "MAX",
-        "RIGHT" -> """
-                                right constrainTo parent.right
-                                width = ${"valueFixed".args("${childLayout.width}.dp")}
-                                right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
-                            """.trimIndent()
-        // Percentages
-        "SCALE" ->
-            """
-                        left constrainTo parent.left
-                        right constrainTo parent.right
-                        width = percent(${(childLayout.width.toDouble() / node.width.toDouble()) * 100}f)
-                        horizontalBias = ${childNode.localX(node)
-                .toDouble() / (node.width.toDouble() - childLayout.width.toDouble())}f
-            """.trimIndent()
-        //Margins
-        "STRETCH",
-        "LEFT_RIGHT" -> """
-                            left constrainTo parent.left
-                            left.margin = ${childNode.localX(node)}.dp
-                            right constrainTo parent.right
-                            right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
-                            width = percent(${(childLayout.width.toDouble() / node.width.toDouble()) * 100}f)
-                        """.trimIndent()
-        "CENTER" -> """
-                        left constrainTo parent.left
-                        right constrainTo parent.right
-                        horizontalBias = ${childNode.localX(node)
-            .toDouble() / (node.width.toDouble() - childLayout.width.toDouble())}f
-                    """.trimIndent()
-
-        else -> throw Exception("nonexistant or unknown constraint type")
-    }}
-    """.trimIndent()
-}
-
-private fun verticalConstraints(
-    index: Int,
-    child: Pair<String, BaseNodeMixin>,
-    childLayout: LayoutMixin,
-    node: DefaultFrameMixin,
-    childNode: BaseNodeMixin
-): String {
-    return """
-        ${when ((child.second as ConstraintMixin).constraints?.vertical) {
-        //Left constrained to left not necessary as this is default
-        "MIN",
-        "TOP" -> """
-                                top constrainTo parent.top
-                                height = ${"valueFixed".args("${childLayout.height}.dp")}
-                                top.margin = ${childNode.localY(node)}.dp
-                            """.trimIndent()
-        "MAX",
-        "BOTTOM" -> """
-                                bottom constrainTo parent.bottom
-                                height = ${"valueFixed".args("${childLayout.height}.dp")}
-                                bottom.margin = ${node.height - (childLayout.height + childNode.localY(node))}.dp 
-                            """.trimIndent()
-        // Percentages
-        "SCALE" ->
-            """
-                        top constrainTo parent.top
-                        bottom constrainTo parent.bottom
-                        height = percent(${(childLayout.height.toDouble() / node.height.toDouble()) * 100}f)
-                        verticalBias = ${childNode.localY(node)
-                .toDouble() / (node.height.toDouble() - childLayout.height.toDouble())}f
-            """.trimIndent()
-        //Margins
-        "STRETCH",
-        "TOP_BOTTOM" -> """
-                            top constrainTo parent.top
-                            bottom constrainTo parent.bottom
-                            height = percent(${(childLayout.height.toDouble() / node.height.toDouble()) * 100}f)
-                            bottom.margin = ${node.height - (childLayout.height + childNode.localY(node))}.dp
-                            top.margin = ${childNode.localY(node)}.dp
-                        """.trimIndent()
-        "CENTER" -> """
-                        top constrainTo parent.top
-                        bottom constrainTo parent.bottom
-                        verticalBias = ${childNode.localY(node)
-            .toDouble() / (node.height.toDouble() - childLayout.height.toDouble())}f
-                        
-                    """.trimIndent()
-        else -> throw Exception("nonexistant or unknown constraint type")
-    }}
-    """.trimIndent()
-}
-
-private fun autoLayoutToString(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
-    return when (node.layoutMode!!) {
-        "VERTICAL" -> """
-            Column(${Mods(extraModifiers) {
-            if (node.counterAxisSizingMode == "FIXED") preferredWidth(
-                node.width
-            )
-        }} ${getStyleMods(
-            node
-        )}) {
-            ${node.children?.joinToString("\n") { child ->
-            makeCompose(child) {
-                if (child is LayoutMixin) {
-                    when (child.layoutAlign) {
-                        "MIN" -> gravity(Modifier.AlignmentOption.Start)
-                        "MAX" -> gravity(Modifier.AlignmentOption.End)
-                        "CENTER" -> gravity(Modifier.AlignmentOption.CenterHorizontally)
-                        "STRETCH" -> fillMaxWidth()
-                        else -> throw Exception("unrecognized LayoutAlign ${child.layoutAlign}")
-                    }
-                }
-            }
-        }
-        }
-        }
-            """.trimIndent()
-        "HORIZONTAL" -> """
-                Row(${Mods(extraModifiers) {
-            if (node.counterAxisSizingMode == "FIXED") preferredHeight(
-                node.height
-            )
-        }}) {
-                    ${node.children?.joinToString("\n") { child ->
-            makeCompose(child) {
-                if (child is LayoutMixin) {
-                    when (child.layoutAlign) {
-                        "MIN" -> gravity(Modifier.AlignmentOption.Start)
-                        "MAX" -> gravity(Modifier.AlignmentOption.End)
-                        "CENTER" -> gravity(Modifier.AlignmentOption.CenterVertically)
-                        "STRETCH" -> fillMaxHeight()
-                        else -> throw Exception("unrecognized LayoutAlign ${child.layoutAlign}")
-                    }
-                }
-            }
-        }
-        }
-        }
-            """.trimIndent()
-        else -> throw Exception("${node.layoutMode}? must be one of those new features")
-    }
-}
-
 
 //DONE: When parent is a Frame layout, and the constraints are not Top and Left
 //DONE: Learn about equivelants to sConstraints in Compose
@@ -458,26 +238,26 @@ private fun autoLayoutToString(node: DefaultFrameMixin, extraModifiers: (Modifie
 // Using constraint layouts can be an easy enough solution
 fun BaseNodeMixin.localX(parent: BaseNodeMixin? = null as BaseNodeMixin): Double {
 
-    if (parent is LayoutMixin && this is LayoutMixin) {
-        val parentLayout = parent as LayoutMixin
-        val parentX = parentLayout.x.toDouble()
-        val thisX = this.x.toDouble()
-        return (Math.abs(parentX) - Math.abs(thisX)) * -parentX.compareTo(thisX)
-    } else if (this is LayoutMixin) {
+    if (this is LayoutMixin) {
         return this.x
     }
-    throw Exception("Not layouts ! :(")
+
+//    From when this used to use the api rather than the plugin interface
+//    if (parent is LayoutMixin && this is LayoutMixin) {
+//        val parentLayout = parent as LayoutMixin
+//        val parentX = parentLayout.x.toDouble()
+//        val thisX = this.x.toDouble()
+//        return (Math.abs(parentX) - Math.abs(thisX)) * -parentX.compareTo(thisX)
+//    } else if (this is LayoutMixin) {
+//        return this.x
+//    }
+    throw Exception("Not a a layout")
 }
 
 
 fun BaseNodeMixin.localY(parent: BaseNodeMixin? = null): Double {
-    if (parent is LayoutMixin && this is LayoutMixin) {
-        val parentLayout = parent as LayoutMixin
-        val parentY = parentLayout.y.toDouble()
-        val thisY = this.y.toDouble()
-        return (Math.abs(parentY) - Math.abs(thisY)) * parentY.compareTo(thisY)
-    } else if (this is LayoutMixin) {
-        return this.x
+    if (this is LayoutMixin) {
+        return this.y
     }
-    throw Exception("Not layouts ! :(")
+    throw Exception("Not a a layout")
 }
