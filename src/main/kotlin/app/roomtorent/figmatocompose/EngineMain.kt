@@ -2,7 +2,7 @@
  * Copyright 2014-2019 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
-package app.reverserent.figmatocompose
+package app.roomtorent.figmatocompose
 
 import io.ktor.config.*
 import io.ktor.server.engine.*

@@ -1,9 +1,11 @@
-package app.reverserent.figmatocompose
+package app.roomtorent.figmatocompose
 
 import BaseNodeMixin
+import ComponentNode
 import DefaultFrameMixin
 import FigmaFile
 import GeometryMixin
+import InstanceNode
 import LayoutMixin
 import RectangleNode
 import SolidPaint
@@ -11,14 +13,19 @@ import TextNode
 import com.beust.klaxon.Klaxon
 import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.Application
+import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.DefaultHeaders
+import io.ktor.request.receive
+import io.ktor.routing.post
+import io.ktor.routing.routing
 import tokeyboi
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.*
+import java.util.HashMap
 
 fun updateFile(fileUrl: String) {
     val freshFigmaFile = "https://api.figma.com/v1/files/$fileUrl"
@@ -37,6 +44,7 @@ fun updateFile(fileUrl: String) {
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
 fun Application.main() {
+
     install(DefaultHeaders)
     install(CallLogging)
 
@@ -44,9 +52,8 @@ fun Application.main() {
         post("/") {
             val nodeJsonToConvert = call.receive<String>();
             try {
-                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
+                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(realTest))!!
                 val output = makeCompose(parsedFigmaFile).removeNoAffectPatterns()
-                call.respondText(output, ContentType.Text.Plain)
                 println(output)
 
                 //Set clipboard to new output
@@ -61,81 +68,6 @@ fun Application.main() {
         }
     }
 }
-
-
-fun RectangleNode.toString(): String {
-    return ""
-}
-
-class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
-    var total: String = "modifier = app.reverserent.figmatocompose.Modifier"
-
-    init {
-        modifiersFromParent?.invoke(this)
-    }
-
-//    fun clear() {
-//        total = ""
-//    }
-
-    fun preferredSize(widthDp: Number, heightDp: Number) {
-        total += ".preferredSize($widthDp.dp, $heightDp.dp)"
-    }
-
-    fun tag(tag: String) {
-        total += ".tag(\"$tag\")"
-    }
-
-    fun fillMaxSize() {
-        total += ".fillMaxSize()"
-    }
-
-    fun fillMaxWidth() {
-        total += ".fillMaxWidth()"
-    }
-
-    fun drawOpacity(amount: Float) {
-        total += ".drawOpacity(${amount}f)"
-    }
-
-    fun preferredWidth(widthDp: Number) {
-        total += ".preferredWidth($widthDp.dp)"
-    }
-
-    fun preferredHeight(heightDp: Number) {
-        total += ".preferredHeight($heightDp.dp)"
-    }
-
-    fun fillMaxHeight() {
-        total += ".fillMaxHeight()"
-    }
-
-    fun none() {
-        total += ".none()"
-    }
-
-    enum class AlignmentOption() {
-        Start,
-        End,
-        CenterHorizontally,
-        CenterVertically
-    }
-
-    fun gravity(alignment: AlignmentOption) {
-        total += ".gravity(Alignment.${alignment.name})"
-    }
-
-    fun drawBackground(color: RGBA) {
-        total += ".drawBackground(${color.toComposeColor()})"
-    }
-}
-
-fun RGBA.toComposeColor() = "Color(${this.r}f, ${this.g}f, ${this.b}f, ${this.a}f)"
-
-private fun String.removeNoAffectPatterns(): String =
-    //NaNf biases mean the child is the same width as the parent so the bias has no affect
-    this.replace(Regex(".*verticalBias = NaNf"), "")
-        .replace(Regex(".*horizontalBias = NaNf"), "")
 
 
 fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Unit = { none() }): String {
@@ -163,7 +95,6 @@ var composables: ArrayList<String> = arrayListOf()
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
 //    val parentLayout: LayoutMixin? = (if (node.parent is LayoutMixin) node.parent else null) as LayoutMixin?
     return when {
-
         node is ComponentNode -> with(node) {
             val name = node.name ?: "unnamed"
             composables.add(

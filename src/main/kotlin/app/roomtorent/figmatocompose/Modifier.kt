@@ -1,4 +1,4 @@
-package app.reverserent.figmatocompose
+package app.roomtorent.figmatocompose
 
 class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     var total: String = "modifier = Modifier"

@@ -1,4 +1,4 @@
-package app.reverserent.figmatocompose
+package app.roomtorent.figmatocompose
 
 import BaseNodeMixin
 import ConstraintMixin
