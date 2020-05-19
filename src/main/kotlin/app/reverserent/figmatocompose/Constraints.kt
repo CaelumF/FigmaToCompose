@@ -125,14 +125,12 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
                 )}",
                 "constraintSet = ${"ConstraintSet".body(
                     """
-                    // Tags for each constrained
-                    ${childrenTagPairs.mapIndexed() { index: Int, pair: Pair<String, BaseNodeMixin> -> "val child${index} = tag(\"${index}_${pair.first}\") " }
-                        .joinToString("\n")}
-                                           
-                    // --
-                                           
-                    // Constraints
-                    ${childrenTagPairs.mapIndexed { index: Int, child: Pair<String, BaseNodeMixin> ->
+                    ${childrenTagPairs.mapIndexed() { index: Int,
+                                                      pair: Pair<String, BaseNodeMixin> ->
+                        "val child${index} = tag(\"${index}_${pair.first}\") "
+                    }.joinToString("\n")}
+                        
+                    ${childrenTagPairs.mapIndexed { index: Int, child: Pair<String, BaseNodeMixin> -> // Constraints
                         val childNode = child.second as BaseNodeMixin
                         val childLayout = child.second as LayoutMixin
                         """

@@ -144,13 +144,49 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
     return modifier.total
 }
 
-//fun Number.divideOrEqual(other: Number)
-//fun replicate
-//DONE: Special behaviour for HORIZONTAL layoutMode aka groups
+//Store a mapping of modified to original.
+//If an original doesn't match its associated modified, it is a collision and we can add a number, and check again
+//This requires more lookups than it could, which can be fixed if it ever matters.
+private val decollisionMap = HashMap<String, String>()
+private fun String.toKotlinIdentifier(): String {
+    val original = this
+    val changed = this.replace(Regex("[\\s-/,.]"), "_")
+    var matches = decollisionMap.getOrPut(changed) { original } == original
+    var attempts = 0
+    while (!matches) {
+        matches = decollisionMap.getOrPut(changed + "_" + attempts++) { original } == original
+    }
+    return changed + "_" + attempts
+}
 
+var composables: ArrayList<String> = arrayListOf()
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
 //    val parentLayout: LayoutMixin? = (if (node.parent is LayoutMixin) node.parent else null) as LayoutMixin?
     return when {
+
+        node is ComponentNode -> with(node) {
+            val name = node.name ?: "unnamed"
+            composables.add(
+                """
+                    @Composable()
+                    fun ${name.toKotlinIdentifier()}(modifier: Modifier = Modifier.None) {
+                ${frameToComposeConstraintsLayout(node) {
+                    //Set to just "modifier" to match the parameter name
+                    total = "modifier"
+                }.trimIndent()}
+                }
+                """.trimIndent()
+            )
+            //Create Composable
+            //Reference compoosable here
+            return@with """
+                ${name.toKotlinIdentifier()}(${extraModifiers})
+            """.trimIndent()
+        }
+        node is InstanceNode -> with(node) {
+            //Just reference composable here, passing extraMods arguments
+            """"""
+        }
         node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToComposeRowColumn(
             node,
             extraModifiers
@@ -186,7 +222,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                             else -> "Color.BLACK"
                         },
                         //TODO: RTL text support
-                        "textAlign = " + when(this.textAlignHorizontal) {
+                        "textAlign = " + when (this.textAlignHorizontal) {
                             "LEFT" -> "TextAlign.Left"
                             "RIGHT" -> "TextAlign.Right"
                             "CENTER" -> "TextAlign.Center"
