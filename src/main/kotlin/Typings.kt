@@ -40,19 +40,19 @@ open class PluginAPI(
 
     ) : Serializable
 
-//@Serializable
+
 open class ClientStorageAPI(
 
 
 ) : Serializable
 
-//@Serializable
+
 open class NotificationHandler(
     val cancel: () -> Unit,
 
     ) : Serializable
 
-//@Serializable
+
 open class ShowUIOptions(
     val visible: Boolean? = null,
 
@@ -65,26 +65,26 @@ open class ShowUIOptions(
 
     )
 
-//@Serializable
+
 open class UIPostMessageOptions(
     val origin: String? = null,
 
 
     )
 
-//@Serializable
+
 open class OnMessageProperties(
     val origin: String? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class UIAPI(
 
 
 ) : Serializable
 
-//@Serializable
+
 open class ViewportAPI(
     val center: Vector? = null,
     val zoom: Double? = null,
@@ -98,14 +98,14 @@ open class ViewportAPI(
 //       Triple<Double, Double, Double>,
 //       Triple<Double, Double, Double> >
 //println(d[0][2])
-//@Serializable
+
 open class Vector(
     val x: Double,
     val y: Double,
 
     ) : Serializable
 
-//@Serializable
+
 open class NullableRect(
     val x: Double?,
     val y: Double?,
@@ -113,7 +113,7 @@ open class NullableRect(
     val height: Double?,
 ) : Serializable
 
-//@Serializable
+
 open class Rect(
     // Defaults will be used in some Groups, where the 0.0 is important to allow relative positioning calculations not to be affected
     var x: Double = 0.0,
@@ -131,7 +131,7 @@ open class Rect(
 
 }
 
-//@Serializable
+
 open class RGB(
     val r: Double = 1.0,
     val g: Double = 1.0,
@@ -139,14 +139,14 @@ open class RGB(
 
     ) : Serializable
 
-//@Serializable
+
 open class FontName(
     val family: String? = null,
     val style: String? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class ArcData(
     val startingAngle: Double? = null,
     val endingAngle: Double? = null,
@@ -154,7 +154,7 @@ open class ArcData(
 
     ) : Serializable
 
-//@Serializable
+
 open class ShadowEffect(
     val type: String /* "DROP_SHADOW" | "INNER_SHADOW" */,
     val color: RGBA? = null,
@@ -165,7 +165,7 @@ open class ShadowEffect(
 
     ) : Serializable
 
-//@Serializable
+
 open class BlurEffect(
     val type: String /* "LAYER_BLUR" | "BACKGROUND_BLUR" */,
     val radius: Double? = null,
@@ -173,21 +173,21 @@ open class BlurEffect(
 
     ) : Serializable
 
-//@Serializable
+
 open class Constraints(
     val horizontal: String /* "MIN" | "CENTER" | "MAX" | "STRETCH" | "SCALE" */,
     val vertical: String /* "MIN" | "CENTER" | "MAX" | "STRETCH" | "SCALE" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class ColorStop(
     val position: Double? = null,
     val color: RGBA? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class ImageFilters(
     val exposure: Double? = null,
 
@@ -212,7 +212,7 @@ open class ImageFilters(
 
     ) : Serializable
 
-//@Serializable
+
 open class SolidPaint(
     val color: RGBA,
     val visible: Boolean? = null,
@@ -226,7 +226,7 @@ open class SolidPaint(
 
     ) : Serializable, Paint
 
-//@Serializable
+
 open class GradientPaint(
     override val type: String /* "GRADIENT_LINEAR" | "GRADIENT_RADIAL" | "GRADIENT_ANGULAR" | "GRADIENT_DIAMOND" */,
 //    val gradientTransform: Any? = null /* JsTuple<Any, Any> */,
@@ -237,7 +237,7 @@ open class GradientPaint(
 
     ) : Serializable, Paint
 
-//@Serializable
+
 open class ImagePaint(
     val scaleMode: String? = null /* "FILL" | "FIT" | "CROP" | "TILE" */,
     val imageHash: String? = null,
@@ -263,14 +263,14 @@ open class ImagePaint(
 
     ) : Serializable, Paint
 
-//@Serializable
+
 open class Guide(
     val axis: String /* "X" | "Y" */,
     val offset: Double? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class RowsColsLayoutGrid(
     val pattern: String /* "ROWS" | "COLUMNS" */,
     val alignment: String /* "MIN" | "MAX" | "STRETCH" | "CENTER" */,
@@ -284,13 +284,12 @@ open class RowsColsLayoutGrid(
 
     val visible: Boolean? = null,
 
-
     val color: RGBA? = null,
 
 
     ) : Serializable
 
-//@Serializable
+
 open class GridLayoutGrid(
     val pattern: String /* "GRID" */,
     val sectionSize: Double? = null,
@@ -302,34 +301,34 @@ open class GridLayoutGrid(
 
     ) : Serializable
 
-//@Serializable
+
 open class ExportSettingsConstraints(
     val type: String /* "SCALE" | "WIDTH" | "HEIGHT" */,
     val value: Double? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class ExportSettingsImage(
-    val format: String /* "JPG" | "PNG" */,
+    override val format: String /* "JPG" | "PNG" */,
     val contentsOnly: Boolean? = null,
 
 
-    val suffix: String? = null,
+    override val suffix: String = "",
 
 
     val constraint: ExportSettingsConstraints? = null,
 
 
-    ) : Serializable
+    ) : Serializable, ExportSettings
 
-//@Serializable
+
 open class ExportSettingsSVG(
-    val format: String /* "SVG" */,
+    override val format: String /* "SVG" */,
     val contentsOnly: Boolean? = null,
 
 
-    val suffix: String? = null,
+    override val suffix: String = "",
 
 
     val svgOutlineText: Boolean? = null,
@@ -341,20 +340,26 @@ open class ExportSettingsSVG(
     val svgSimplifyStroke: Boolean? = null,
 
 
-    ) : Serializable
+    ) : Serializable, ExportSettings
 
-//@Serializable
+
 open class ExportSettingsPDF(
-    val format: String /* "PDF" */,
+    override val format: String /* "PDF" */,
     val contentsOnly: Boolean? = null,
 
 
-    val suffix: String? = null,
+    override val suffix: String = "",
 
 
-    ) : Serializable
+    ) : Serializable, ExportSettings
 
-//@Serializable
+@TypeFor(field = "format", adapter = ExportSettingsTypeAdapter::class)
+interface ExportSettings {
+    val format: String
+    val suffix: String
+}
+
+
 open class VectorVertex(
     val x: Double? = null,
     val y: Double? = null,
@@ -367,26 +372,24 @@ open class VectorVertex(
 
     ) : Serializable
 
-//@Serializable
+
 open class VectorSegment(
     val start: Double? = null,
     val end: Double? = null,
     val tangentStart: Vector? = null,
-
-
     val tangentEnd: Vector? = null,
 
 
     ) : Serializable
 
-//@Serializable
+
 open class VectorRegion(
     val windingRule: String /* "NONZERO" | "EVENODD" */,
     val loops: List<List<Integer>>,
 
     ) : Serializable
 
-//@Serializable
+
 open class VectorNetwork(
     val vertices: Array<VectorVertex>,
     val segments: Array<VectorSegment>,
@@ -395,40 +398,40 @@ open class VectorNetwork(
 
     ) : Serializable
 
-//@Serializable
+
 open class VectorPath(
     val windingRule: String /* "NONZERO" | "EVENODD" | "NONE" */,
     val data: String? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class LetterSpacing(
     val value: Double? = null,
     val unit: String /* "PIXELS" | "PERCENT" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$2`(
     val value: Double? = null,
     val unit: String /* "PIXELS" | "PERCENT" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$3`(
     val unit: String /* "AUTO" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class Font(
     val fontName: FontName? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class Reaction(
 ////    val action: Any /* `T$4` | `T$5` | `T$6` */,
 
@@ -438,20 +441,20 @@ open class Reaction(
 
 ) : Serializable
 
-//@Serializable
+
 open class `T$4`(
     val type: String /* "BACK" | "CLOSE" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$5`(
     val type: String /* "URL" */,
     val url: String? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$6`(
     val type: String /* "NODE" */,
     val destinationId: String? = null,
@@ -467,7 +470,7 @@ open class `T$6`(
 
     ) : Serializable
 
-//@Serializable
+
 open class SimpleTransition(
     val type: String /* "DISSOLVE" | "SMART_ANIMATE" */,
     val easing: Easing? = null,
@@ -475,7 +478,7 @@ open class SimpleTransition(
 
     ) : Serializable
 
-//@Serializable
+
 open class DirectionalTransition(
     val type: String /* "MOVE_IN" | "MOVE_OUT" | "PUSH" | "SLIDE_IN" | "SLIDE_OUT" */,
     val direction: String /* "LEFT" | "RIGHT" | "TOP" | "BOTTOM" */,
@@ -485,52 +488,52 @@ open class DirectionalTransition(
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$7`(
     val type: String /* "ON_CLICK" | "ON_HOVER" | "ON_PRESS" | "ON_DRAG" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$8`(
     val type: String /* "AFTER_TIMEOUT" */,
     val timeout: Double? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$9`(
     val type: String /* "MOUSE_ENTER" | "MOUSE_LEAVE" | "MOUSE_UP" | "MOUSE_DOWN" */,
     val delay: Double? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class Easing(
     val type: String /* "EASE_IN" | "EASE_OUT" | "EASE_IN_AND_OUT" | "LINEAR" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$10`(
     val type: String /* "NONE" */,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$11`(
     val type: String /* "SOLID_COLOR" */,
     val color: RGBA? = null,
 
     ) : Serializable
 
-//@Serializable
+
 open class `T$0`(
 
 
 ) : Serializable
 
-//@Serializable
+
 class BaseNodeMixinImpl(
 //    Important that these are val
     override val id: String? = null,
@@ -560,7 +563,7 @@ interface SceneNodeMixin {
 
 }
 
-//@Serializable
+
 class GroupNodeImpl(
     override val type: String = "GROUP",
     override val id: String? = null,
@@ -596,7 +599,7 @@ class GroupNodeImpl(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 ) : Serializable, GroupNode {
 
     override val x: Double
@@ -676,15 +679,15 @@ interface Paint {
     val type: String
 }
 
-////@Serializable
+//
 //class SolidPaint () {
 //
 //}
-////@Serializable
+//
 //class GradientPaint() {
 //
 //}
-////@Serializable
+//
 //class ImagePaint() {
 //
 //}
@@ -717,7 +720,7 @@ interface RectangleCornerMixin {
 }
 
 interface ExportMixin {
-//    val exportSettings: Array<Any /* ExportSettingsImage | ExportSettingsSVG | ExportSettingsPDF */>?
+    val exportSettings: Array<ExportSettings /* ExportSettingsImage | ExportSettingsSVG | ExportSettingsPDF */>?
 }
 
 interface ReactionMixin {
@@ -748,7 +751,7 @@ interface DefaultFrameMixin : Serializable, BaseNodeMixin, SceneNodeMixin, React
     val overlayBackgroundInteraction: String /* "NONE" | "CLOSE_ON_CLICK_OUTSIDE" */?
 }
 
-//@Serializable
+
 open class FigmaFile(
     val document: DocumentNode? = null,
 ////        val components: JsonArray<Any>,
@@ -761,7 +764,7 @@ open class FigmaFile(
     val role: String?
 ) : Serializable
 
-//@Serializable
+
 open class DocumentNode(
     override val name: String? = null,
     override val id: String? = null,
@@ -771,7 +774,7 @@ open class DocumentNode(
     override val type: String = "DOCUMENT",
 ) : Serializable, BaseNodeMixin
 
-//@Serializable
+
 open class `T$1`(
     val node: TextNode? = null,
     val start: Double? = null,
@@ -779,7 +782,7 @@ open class `T$1`(
 
     )
 
-//@Serializable
+
 open class Canvas(
     override val id: String? = "0.0",
     override val name: String? = null,
@@ -790,7 +793,7 @@ open class Canvas(
 ) : Serializable, BaseNodeMixin, ChildrenMixin {
 }
 
-//@Serializable
+
 open class PageNode(
     override val type: String = "PAGE" /* "PAGE" */,
 
@@ -806,10 +809,11 @@ open class PageNode(
     override val name: String? = null,
     override val removed: Boolean? = null,
     override val children: Array<BaseNodeMixin>?,
+    override val exportSettings: Array<ExportSettings>? = null,
 //    override val exportSettings: Array<Any>? = null,
 ) : Serializable, BaseNodeMixin, ChildrenMixin, ExportMixin
 
-//@Serializable
+
 open class FrameNode(
     override val type: String = "FRAME" /* "FRAME" */,
     override val id: String? = null,
@@ -879,7 +883,7 @@ open class FrameNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -894,14 +898,14 @@ open class FrameNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 //
-////@Serializable
+//
 //open class GroupNode : _root_ide_package_.java.io.Serializable, BaseNodeMixin? = null, SceneNodeMixin, ReactionMixin, ChildrenMixin, ContainerMixin, BlendMixin, LayoutMixin, ExportMixin(
 //        val type: String /* "GROUP" */,
 //
 //
 //)
 
-//@Serializable
+
 open class SliceNode(
     override val type: String = "SLICE"/* "SLICE" */,
     override val id: String? = null,
@@ -928,7 +932,7 @@ open class SliceNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 //    override val exportSettings: Array<Any>? = null,
 ) : Serializable, BaseNodeMixin, SceneNodeMixin, LayoutMixin, ExportMixin {
 
@@ -943,7 +947,7 @@ open class SliceNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class RectangleNode(
     override val type: String = "RECTANGLE" /* "RECTANGLE" */,
     override val id: String? = null,
@@ -994,7 +998,7 @@ open class RectangleNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin, RectangleCornerMixin {
 
     override val x: Double
@@ -1008,7 +1012,7 @@ open class RectangleNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class LineNode(
     override val type: String = "LINE" /* "LINE" */,
     override val id: String? = null,
@@ -1053,7 +1057,7 @@ open class LineNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin {
 
     override val x: Double
@@ -1067,7 +1071,7 @@ open class LineNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class EllipseNode(
     override val type: String = "ELLIPSE" /* "ELLIPSE" */,
 
@@ -1116,7 +1120,7 @@ open class EllipseNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1131,7 +1135,7 @@ open class EllipseNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class PolygonNode(
     override val type: String = "POLYGON" /* "POLYGON" */,
 
@@ -1180,7 +1184,7 @@ open class PolygonNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1195,7 +1199,7 @@ open class PolygonNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class StarNode(
     override val type: String = "STAR" /* "STAR" */,
 
@@ -1245,7 +1249,7 @@ open class StarNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1260,7 +1264,7 @@ open class StarNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class VectorNode(
     override val type: String = "VECTOR"/* "VECTOR" */,
 
@@ -1309,7 +1313,7 @@ open class VectorNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 //    override val x: Double
 //        get() = absoluteBoundingBox.x
@@ -1333,7 +1337,7 @@ open class VectorNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class TextNode(
     override val type: String = "TEXT" /* "TEXT" */,
 
@@ -1403,7 +1407,7 @@ open class TextNode(
     override val y: Double,
     override val rotation: Double,
     override val width: Double,
-    override val height: Double,
+    override val height: Double, override val exportSettings: Array<ExportSettings>? = null,
 
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin {
@@ -1418,7 +1422,7 @@ open class TextNode(
 //        get() = absoluteBoundingBox.height
 }
 
-//@Serializable
+
 open class ComponentNode(
     override val type: String = "COMPONENT" /* "COMPONENT" */,
 
@@ -1493,8 +1497,8 @@ open class ComponentNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
-) : Serializable, DefaultFrameMixin{
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+) : Serializable, DefaultFrameMixin {
 
     override val x: Double
         get() = realx ?: absoluteBoundingBox?.x ?: throw kotlin.Exception("Can't derive from anything")
@@ -1507,7 +1511,7 @@ open class ComponentNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class InstanceNode(
     override val type: String = "INSTANCE" /* "INSTANCE" */,
 
@@ -1580,7 +1584,7 @@ open class InstanceNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -1595,7 +1599,7 @@ open class InstanceNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 open class BooleanOperationNode(
     override val type: String = "BOOLEAN_OPERATION"/* "BOOLEAN_OPERATION" */,
 
@@ -1645,7 +1649,7 @@ open class BooleanOperationNode(
     val realy: Double? = y,
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
-    val realheight: Double? = height,
+    val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
 
     ) : Serializable, DefaultShapeMixin, ChildrenMixin, CornerMixin {
 
@@ -1660,7 +1664,7 @@ open class BooleanOperationNode(
         get() = realheight ?: absoluteBoundingBox?.height ?: throw kotlin.Exception("Can't derive from anything")
 }
 
-//@Serializable
+
 class BaseStyleImpl(
     override val id: String? = null,
     override val type: String? = null,
@@ -1689,7 +1693,7 @@ interface BaseStyle {
     val key: String?
 }
 
-//@Serializable
+
 open class PaintStyle(
     override val type: String? /* "PAINT" */,
 //    val paints: Array<Any /* SolidPaint | GradientPaint | ImagePaint */>,
@@ -1700,7 +1704,7 @@ open class PaintStyle(
     override val key: String? = null,
 ) : Serializable, BaseStyle
 
-//@Serializable
+
 open class TextStyle(
     override val type: String? /* "TEXT" */,
     val fontSize: Double? = null,
@@ -1721,7 +1725,7 @@ open class TextStyle(
 
     ) : Serializable, BaseStyle
 
-//@Serializable
+
 open class EffectStyle(
     override val type: String? /* "EFFECT" */,
 //    val effects: Array<Any /* ShadowEffect | BlurEffect */>,
@@ -1733,7 +1737,7 @@ open class EffectStyle(
 
     ) : Serializable, BaseStyle
 
-//@Serializable
+
 open class GridStyle(
     override val type: String? /* "GRID" */,
 //    val layoutGrids: Array<Any /* RowsColsLayoutGrid | GridLayoutGrid */>,

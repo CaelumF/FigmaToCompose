@@ -3,6 +3,7 @@ package app.roomtorent.figmatocompose
 import BaseNodeMixin
 import ComponentNode
 import DefaultFrameMixin
+import ExportSettingsSVG
 import FigmaFile
 import GeometryMixin
 import InstanceNode
@@ -44,23 +45,38 @@ fun updateFile(fileUrl: String) {
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
 fun Application.main() {
-
     install(DefaultHeaders)
     install(CallLogging)
+    val clipboard: Clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
 
     routing {
         post("/") {
             val nodeJsonToConvert = call.receive<String>();
             try {
-                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(realTest))!!
-                val output = makeCompose(parsedFigmaFile).removeNoAffectPatterns()
-                println(output)
+                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
+                val mainComposableContent = makeCompose(parsedFigmaFile).removeNoAffectPatterns()
+                val identifier = parsedFigmaFile.name ?: "unnamed".toKotlinIdentifier()
 
+                val joinedComposables = composables.values.joinToString(separator = "\n")
+                val upperMostComposable = """
+                        @Composable()
+                        @Preview()
+                        fun $identifier() {
+                            $mainComposableContent
+                        }
+                """.trimIndent()
+
+                val output = """
+                    $joinedComposables
+        
+                    $upperMostComposable
+                """.trimIndent()
+                    .removeNoAffectPatterns()
+
+                println("Processed one, setting clipboard to output :) ")
                 //Set clipboard to new output
                 val selection = StringSelection(output)
-                val clipboard: Clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
                 clipboard.setContents(selection, selection)
-
             } catch (e: Exception) {
                 println("We rockin' an axeception: $e")
                 e.printStackTrace()
@@ -88,47 +104,72 @@ private fun String.toKotlinIdentifier(): String {
     while (!matches) {
         matches = decollisionMap.getOrPut(changed + "_" + attempts++) { original } == original
     }
-    return changed + "_" + attempts
+    return if (attempts > 0) changed + "_" + attempts else changed
 }
 
-var composables: ArrayList<String> = arrayListOf()
-fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
-//    val parentLayout: LayoutMixin? = (if (node.parent is LayoutMixin) node.parent else null) as LayoutMixin?
+var composables: HashMap<String, String> = hashMapOf()
+fun defineComponentFromFrameMixin(node: DefaultFrameMixin): String {
+    val name = node.name ?: "unnamed"
+    val identifier = name.toKotlinIdentifier()
+    composables[identifier] = """
+        @Composable()
+        fun $identifier(modifier: Modifier = Modifier.None) {
+            ${frameOrAutoLayoutToCompose(node) { total = "modifier = modifier" }}
+        }"""
+        .trimIndent()
+
+    return identifier
+}
+
+fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
     return when {
-        node is ComponentNode -> with(node) {
-            val name = node.name ?: "unnamed"
-            composables.add(
-                """
-                    @Composable()
-                    fun ${name.toKotlinIdentifier()}(modifier: Modifier = Modifier.None) {
-                ${frameToComposeConstraintsLayout(node) {
-                    //Set to just "modifier" to match the parameter name
-                    total = "modifier"
-                }.trimIndent()}
+        node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToComposeRowColumn(
+            node,
+            extraModifiers
+        )
+
+        else -> frameToComposeConstraintsLayout(
+            node,
+            extraModifiers
+        )
+    }
+}
+
+/**
+ * Creates a box with a modifier referencing the vector asset specified in the export settings for this frame. A resource with this id will be needed
+ * Note that android resources are all lower case, so for convenience this will convert the name to lowercase which could cause duplicates
+ * TODO: Make it easier to import import assets to android project. Plugins already exist for this though
+ */
+fun vectorFrameToCompose(node: DefaultFrameMixin): String {
+    val exportSettings = node.exportSettings!!.any { it is ExportSettingsSVG }
+    return """
+    ${"Box"
+        .args(Mods {
+            preferredSize(node.width, node.height)
+            paintVectorPaint("R.drawable.ic_${node.name?.toLowerCase()}" ?: throw Exception(""))
+        })}
+    """.trimIndent()
+}
+
+fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
+    return when (node) {
+        is DefaultFrameMixin -> when {
+            node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node)
+
+            node is ComponentNode -> with(node) {
+                val identifier = defineComponentFromFrameMixin(node)
+                "$identifier(${Mods(extraModifiers, mods = {})})"
+            }
+            node is InstanceNode -> with(node) {
+                val identifier = (node.name ?: "unnamed").toKotlinIdentifier()
+                if (!composables.containsKey(identifier)) {
+                    defineComponentFromFrameMixin(node)
                 }
-                """.trimIndent()
-            )
-            //Create Composable
-            //Reference compoosable here
-            return@with """
-                ${name.toKotlinIdentifier()}(${extraModifiers})
-            """.trimIndent()
+                "$identifier(${Mods(extraModifiers, mods = {})})"
+            }
+            else -> frameOrAutoLayoutToCompose(node, extraModifiers)
         }
-        node is InstanceNode -> with(node) {
-            //Just reference composable here, passing extraMods arguments
-            """"""
-        }
-        node is DefaultFrameMixin && node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToComposeRowColumn(
-            node,
-            extraModifiers
-        )
-
-        node is DefaultFrameMixin -> frameToComposeConstraintsLayout(
-            node,
-            extraModifiers
-        )
-
-        node is RectangleNode -> with(node) {
+        is RectangleNode -> with(node) {
             """
                Box(${Mods(extraModifiers) {
                 preferredSize(
@@ -138,7 +179,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
             }} ${getStyleMods(this)} ){} 
             """.trimIndent()
         }
-        node is TextNode -> with(node) {
+        is TextNode -> with(node) {
             """
                 ${node.characters?.let { text ->
                 "Text".args("\"$text\"", Mods(extraModifiers) {

@@ -43,9 +43,14 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
         total += ".fillMaxHeight()"
     }
 
+    fun paintVectorPaint(drawableIntPath: String) {
+        total += ".paint".args("VectorPainter".args("vectorResource".args("asset = $drawableIntPath")))
+    }
+
     fun none() {
         total += ".none()"
     }
+
 
     enum class AlignmentOption() {
         Start,

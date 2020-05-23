@@ -27,14 +27,13 @@ fun horizontalConstraints(
                                 width = ${"valueFixed".args("${childLayout.width}.dp")}
                                 right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
                             """.trimIndent()
-        // Percentages (heh not really "per cent" as of dev11
+        // Percentages (heh not really "per cent" as of dev11)
         "SCALE" ->
             """
                         left constrainTo parent.left
                         right constrainTo parent.right
-                        width = percent(${(childLayout.width.toDouble() / node.width.toDouble()) * 1/*00*/}f)
-                        horizontalBias = ${childNode.localX(node)
-                .toDouble() / (node.width.toDouble() - childLayout.width.toDouble())}f
+                        width = percent(${(childLayout.width / node.width) * 1/*00*/}f)
+                        horizontalBias = ${childNode.localX(node) / (node.width - childLayout.width)}f
             """.trimIndent()
         //Margins
         "STRETCH",
@@ -43,13 +42,12 @@ fun horizontalConstraints(
                             left.margin = ${childNode.localX(node)}.dp
                             right constrainTo parent.right
                             right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
-                            width = percent(${(childLayout.width.toDouble() / node.width.toDouble()) * 1/*00*/}f)
+                            width = percent(${(childLayout.width / node.width) * 1/*00*/}f)
                         """.trimIndent()
         "CENTER" -> """
                         left constrainTo parent.left
                         right constrainTo parent.right
-                        horizontalBias = ${childNode.localX(node)
-            .toDouble() / (node.width.toDouble() - childLayout.width.toDouble())}f
+                        horizontalBias = ${childNode.localX(node) / (node.width - childLayout.width)}f
                     """.trimIndent()
 
         else -> throw Exception("nonexistant or unknown constraint type")
@@ -84,16 +82,15 @@ fun verticalConstraints(
             """
                         top constrainTo parent.top
                         bottom constrainTo parent.bottom
-                        height = percent(${(childLayout.height.toDouble() / node.height.toDouble()) * 1/*00*/}f)
-                        verticalBias = ${childNode.localY(node)
-                .toDouble() / (node.height.toDouble() - childLayout.height.toDouble())}f
+                        height = percent(${(childLayout.height / node.height) * 1/*00*/}f)
+                        verticalBias = ${childNode.localY(node) / (node.height - childLayout.height)}f
             """.trimIndent()
         //Margins
         "STRETCH",
         "TOP_BOTTOM" -> """
                             top constrainTo parent.top
                             bottom constrainTo parent.bottom
-                            height = percent(${(childLayout.height.toDouble() / node.height.toDouble()) * 1/*00*/}f)
+                            height = percent(${(childLayout.height / node.height) * 1/*00*/}f)
                             bottom.margin = ${node.height - (childLayout.height + childNode.localY(node))}.dp
                             top.margin = ${childNode.localY(node)}.dp
                         """.trimIndent()
@@ -101,7 +98,7 @@ fun verticalConstraints(
                         top constrainTo parent.top
                         bottom constrainTo parent.bottom
                         verticalBias = ${childNode.localY(node)
-            .toDouble() / (node.height.toDouble() - childLayout.height.toDouble())}f
+            .toDouble() / (node.height - childLayout.height)}f
                         
                     """.trimIndent()
         else -> throw Exception("nonexistant or unknown constraint type")
