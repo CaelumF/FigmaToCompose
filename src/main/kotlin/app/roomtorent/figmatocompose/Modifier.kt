@@ -1,5 +1,7 @@
 package app.roomtorent.figmatocompose
 
+import ColorStop
+
 class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     var total: String = "modifier = Modifier"
 
@@ -44,7 +46,22 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     }
 
     fun paintVectorPaint(drawableIntPath: String) {
-        total += ".paint".args("VectorPainter".args("vectorResource".args("asset = $drawableIntPath")))
+        total += ".paint".args("VectorPainter".args("vectorResource".args(drawableIntPath)))
+    }
+
+    fun linearGradientBackground(
+        stops: Array<ColorStop>,
+        width: Float,
+        gradientTransform: ArrayList<ArrayList<Double>>? = null
+    ) {
+        //TODO: Support specific 2d gradient end and start
+        total += ".drawBackground".args(
+            "HorizontalGradient".args(
+                stops.joinToString { "${it.position}f to ${it.color?.toComposeColor()}" },
+                "startX = Px.Zero",
+                "endX = ${width}.dp.toPx()"
+            )
+        )
     }
 
     fun none() {

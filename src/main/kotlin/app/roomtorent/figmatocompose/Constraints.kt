@@ -117,9 +117,7 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
 
 
             "ConstraintLayout".args(
-                "${Mods(extraModifiers) { }} ${getStyleMods(
-                    this
-                )}",
+                "${Mods(extraModifiers) { }} ${getStyleMods(this)}",
                 "constraintSet = ${"ConstraintSet".body(
                     """
                     ${childrenTagPairs.mapIndexed() { index: Int,

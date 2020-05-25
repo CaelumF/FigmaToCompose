@@ -229,7 +229,7 @@ open class SolidPaint(
 
 open class GradientPaint(
     override val type: String /* "GRADIENT_LINEAR" | "GRADIENT_RADIAL" | "GRADIENT_ANGULAR" | "GRADIENT_DIAMOND" */,
-//    val gradientTransform: Any? = null /* JsTuple<Any, Any> */,
+    val gradientTransform: ArrayList<ArrayList<java.lang.Double>>? = null /* JsTuple<Any, Any> */,
     val gradientStops: Array<ColorStop>? = null,
     val visible: Boolean? = null,
     val opacity: Double = 1.0,
@@ -415,7 +415,7 @@ open class LetterSpacing(
 
 open class `T$2`(
     val value: Double? = null,
-    val unit: String /* "PIXELS" | "PERCENT" */,
+    val unit: String? /* "PIXELS" | "PERCENT" */,
 
     ) : Serializable
 
@@ -1351,22 +1351,22 @@ open class TextNode(
     val textStyleId: String? = null /* String | Any */,
 
 
-//    val fontSize: Any? = null /* Double | Any */,
+    val fontSize: Double = 0.0 /* Double | Any */,
 
 
-//    val fontName: Any? = null /* FontName | Any */,
+    val fontName: FontName? = null /* FontName | Any */,
 
 
-//    val textCase: Any? = null /* "ORIGINAL" | "UPPER" | "LOWER" | "TITLE" | Any */,
+    val textCase: String? = null /* "ORIGINAL" | "UPPER" | "LOWER" | "TITLE" | Any */,
 
 
-//    val textDecoration: Any? = null /* "NONE" | "UNDERLINE" | "STRIKETHROUGH" | Any */,
+    val textDecoration: Any? = null /* "NONE" | "UNDERLINE" | "STRIKETHROUGH" | Any */,
 
 
 //    val letterSpacing: Any? = null /* LetterSpacing | Any */,
 
 
-//    val lineHeight: Any? = null /* `T$2` | `T$3` | Any */,
+    val lineHeight: `T$2`? = null /* `T$2` | `T$3` | Any */,
 
 
     val characters: String? = null,

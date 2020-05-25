@@ -6,6 +6,8 @@ import DefaultFrameMixin
 import ExportSettingsSVG
 import FigmaFile
 import GeometryMixin
+import GradientPaint
+import GroupNodeImpl
 import InstanceNode
 import LayoutMixin
 import RectangleNode
@@ -147,12 +149,17 @@ fun vectorFrameToCompose(node: DefaultFrameMixin): String {
         .args(Mods {
             preferredSize(node.width, node.height)
             paintVectorPaint("R.drawable.ic_${node.name?.toLowerCase()}" ?: throw Exception(""))
-        })}
+        } + getStyleMods(node))}
     """.trimIndent()
 }
 
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
     return when (node) {
+        //Groups will show a size, but the size is based off its dchildren and editing it in figma changes the child size.
+        //So for groups we will make a box with no explicit size.
+        is GroupNodeImpl -> {
+            "Box()".body(node.children?.joinToString { makeCompose(it) } ?: "")
+        }
         is DefaultFrameMixin -> when {
             node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node)
 
@@ -201,7 +208,8 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                             "JUSTIFIED" -> "TextAlign.Justify"
 
                             else -> throw Exception("Horizontal text alignment type ${this.textAlignHorizontal} is new to me")
-                        }
+                        },
+                        "fontSize = ${node.fontSize}.sp"
                     ),
                 )
             }}
@@ -217,8 +225,10 @@ fun getStyleMods(node: BaseNodeMixin): String {
             Mods() {
                 total = "+ Modifier"
                 node.fills?.forEach { fill ->
-                    when (fill) {
-                        is SolidPaint -> drawBackground(fill.color)
+                    when {
+                        //Different gradient types share the same Kotlin type, so for now look at fill.type
+                        fill.type == "GRADIENT_LINEAR" -> with(fill as GradientPaint) { linearGradientBackground(this.gradientStops?: arrayOf(), (node as LayoutMixin).width.toFloat()) }
+                        fill is SolidPaint -> drawBackground(fill.color)
                     }
                 }
                 //If this is pointless just do nothing
