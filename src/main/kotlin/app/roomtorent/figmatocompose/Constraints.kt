@@ -26,7 +26,7 @@ fun horizontalConstraints(
                                 right constrainTo parent.right
                                 width = ${"valueFixed".args("${childLayout.width}.dp")}
                                 right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
-                            """.trimIndent()
+                   """.trimIndent()
         // Percentages (heh not really "per cent" as of dev11)
         "SCALE" ->
             """
@@ -117,7 +117,7 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
 
 
             "ConstraintLayout".args(
-                "${Mods(extraModifiers) { }} ${getStyleMods(this)}",
+                "modifier = ${Mods(extraModifiers) { addStyleMods(node) }}",
                 "constraintSet = ${"ConstraintSet".body(
                     """
                     ${childrenTagPairs.mapIndexed() { index: Int,

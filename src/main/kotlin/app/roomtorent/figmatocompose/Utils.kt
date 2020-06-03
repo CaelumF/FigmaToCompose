@@ -2,7 +2,13 @@ package app.roomtorent.figmatocompose
 
 import java.io.Serializable
 
-fun String.args(vararg parameters: String) = "${this}(${parameters.joinToString(", ")})"
+fun String.args(vararg parameters: String, escapeCharacters: Boolean = false) = "${this}(${parameters.joinToString(", ") {
+    if(!escapeCharacters) return@joinToString it
+    it.replace(
+        "\n",
+        "\\n"
+    )
+}})"
 fun String.body(body: String) = """
     $this {
         ${body.split("\n").joinToString("\n    ")}
@@ -18,7 +24,7 @@ open class RGBA(
 
     ) : Serializable
 
-fun RGBA.toComposeColor() = "Color(${this.r}f, ${this.g}f, ${this.b}f, ${this.a}f)"
+fun RGBA.toComposeColor(opacityOverride: Float? = null) = "Color(${this.r}f, ${this.g}f, ${this.b}f, ${opacityOverride ?: this.a}f)"
 public fun String.removeNoAffectPatterns(): String =
     //NaNf biases mean the child is the same width as the parent so the bias has no affect
     this.replace(Regex(".*verticalBias = NaNf"), "")

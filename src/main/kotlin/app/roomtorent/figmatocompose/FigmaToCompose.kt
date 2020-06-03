@@ -1,6 +1,7 @@
 package app.roomtorent.figmatocompose
 
 import BaseNodeMixin
+import BlendMixin
 import ComponentNode
 import DefaultFrameMixin
 import ExportSettingsSVG
@@ -11,6 +12,7 @@ import GroupNodeImpl
 import InstanceNode
 import LayoutMixin
 import RectangleNode
+import ShadowEffect
 import SolidPaint
 import TextNode
 import com.beust.klaxon.Klaxon
@@ -21,6 +23,7 @@ import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.DefaultHeaders
 import io.ktor.request.receive
+import io.ktor.response.respond
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import tokeyboi
@@ -46,10 +49,19 @@ fun updateFile(fileUrl: String) {
 
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
+class Settings private constructor(){
+    companion object
+    open class Optimizations private constructor() {
+        companion object {
+            val omitExtraShadows: Boolean = true
+        }
+    }
+}
+
 fun Application.main() {
     install(DefaultHeaders)
     install(CallLogging)
-    val clipboard: Clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
+    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
 
     routing {
         post("/") {
@@ -57,7 +69,7 @@ fun Application.main() {
             try {
                 val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
                 val mainComposableContent = makeCompose(parsedFigmaFile).removeNoAffectPatterns()
-                val identifier = parsedFigmaFile.name ?: "unnamed".toKotlinIdentifier()
+                val identifier = (parsedFigmaFile.name ?: "unnamed").toKotlinIdentifier()
 
                 val joinedComposables = composables.values.joinToString(separator = "\n")
                 val upperMostComposable = """
@@ -75,6 +87,7 @@ fun Application.main() {
                 """.trimIndent()
                     .removeNoAffectPatterns()
 
+                call.respond(output)
                 println("Processed one, setting clipboard to output :) ")
                 //Set clipboard to new output
                 val selection = StringSelection(output)
@@ -91,7 +104,7 @@ fun Application.main() {
 fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Unit = { none() }): String {
     val modifier = Modifier(extraModifiers)
     mods.invoke(modifier)
-    return modifier.total
+    return modifier.getBuiltOptimized()
 }
 
 //Store a mapping of modified to original.
@@ -115,8 +128,8 @@ fun defineComponentFromFrameMixin(node: DefaultFrameMixin): String {
     val identifier = name.toKotlinIdentifier()
     composables[identifier] = """
         @Composable()
-        fun $identifier(modifier: Modifier = Modifier.None) {
-            ${frameOrAutoLayoutToCompose(node) { total = "modifier = modifier" }}
+        fun $identifier(modifier: Modifier = Modifier) {
+            ${frameOrAutoLayoutToCompose(node) { addPassedProperties() }}
         }"""
         .trimIndent()
 
@@ -149,7 +162,8 @@ fun vectorFrameToCompose(node: DefaultFrameMixin): String {
         .args(Mods {
             preferredSize(node.width, node.height)
             paintVectorPaint("R.drawable.ic_${node.name?.toLowerCase()}" ?: throw Exception(""))
-        } + getStyleMods(node))}
+            addStyleMods(node)
+        })}
     """.trimIndent()
 }
 
@@ -158,7 +172,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
         //Groups will show a size, but the size is based off its dchildren and editing it in figma changes the child size.
         //So for groups we will make a box with no explicit size.
         is GroupNodeImpl -> {
-            "Box()".body(node.children?.joinToString { makeCompose(it) } ?: "")
+            "Box()".body(node.children?.joinToString(separator = "\n") { makeCompose(it) } ?: "")
         }
         is DefaultFrameMixin -> when {
             node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node)
@@ -183,7 +197,9 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                     width,
                     height
                 )
-            }} ${getStyleMods(this)} ){} 
+                addStyleMods(node)
+            }}){} 
+            
             """.trimIndent()
         }
         is TextNode -> with(node) {
@@ -211,33 +227,16 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                         },
                         "fontSize = ${node.fontSize}.sp"
                     ),
+                    escapeCharacters = true
                 )
             }}
+            
             """.trimIndent()
         }
         else -> ""
     }
 }
 
-fun getStyleMods(node: BaseNodeMixin): String {
-    return when (node) {
-        is GeometryMixin -> with(node) {
-            Mods() {
-                total = "+ Modifier"
-                node.fills?.forEach { fill ->
-                    when {
-                        //Different gradient types share the same Kotlin type, so for now look at fill.type
-                        fill.type == "GRADIENT_LINEAR" -> with(fill as GradientPaint) { linearGradientBackground(this.gradientStops?: arrayOf(), (node as LayoutMixin).width.toFloat()) }
-                        fill is SolidPaint -> drawBackground(fill.color)
-                    }
-                }
-                //If this is pointless just do nothing
-                if (total == "+ Modifier") total = ""
-            }
-        }
-        else -> ""
-    }
-}
 
 private fun Element(name: String, vararg parameters: String, body: () -> String) =
     Element(name, (parameters).joinToString(", "), body.invoke())

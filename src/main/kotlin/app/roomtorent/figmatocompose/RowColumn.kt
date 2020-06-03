@@ -10,7 +10,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             if (node.counterAxisSizingMode == "FIXED") preferredWidth(
                 node.width
             )
-        }} ${getStyleMods(node)}) {
+        }}) {
             ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {
@@ -34,7 +34,8 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             if (node.counterAxisSizingMode == "FIXED") preferredHeight(
                 node.height
             )
-        }} ${getStyleMods(node)}) {
+            addStyleMods(node)
+        }}) {
                     ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {

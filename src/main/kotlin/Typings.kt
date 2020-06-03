@@ -154,24 +154,27 @@ open class ArcData(
 
     ) : Serializable
 
-
+@TypeFor("type", EffectAdapter::class)
+interface Effect {
+    val type: String
+}
 open class ShadowEffect(
-    val type: String /* "DROP_SHADOW" | "INNER_SHADOW" */,
+    override val type: String /* "DROP_SHADOW" | "INNER_SHADOW" */,
     val color: RGBA? = null,
     val offset: Vector? = null,
     val radius: Double? = null,
     val visible: Boolean? = null,
     val blendMode: String /* "PASS_THROUGH" | "NORMAL" | "DARKEN" | "MULTIPLY" | "LINEAR_BURN" | "COLOR_BURN" | "LIGHTEN" | "SCREEN" | "LINEAR_DODGE" | "COLOR_DODGE" | "OVERLAY" | "SOFT_LIGHT" | "HARD_LIGHT" | "DIFFERENCE" | "EXCLUSION" | "HUE" | "SATURATION" | "COLOR" | "LUMINOSITY" */,
 
-    ) : Serializable
+    ) : Serializable, Effect
 
 
 open class BlurEffect(
-    val type: String /* "LAYER_BLUR" | "BACKGROUND_BLUR" */,
+    override val type: String /* "LAYER_BLUR" | "BACKGROUND_BLUR" */,
     val radius: Double? = null,
     val visible: Boolean? = null,
 
-    ) : Serializable
+    ) : Serializable, Effect
 
 
 open class Constraints(
@@ -215,7 +218,7 @@ open class ImageFilters(
 
 open class SolidPaint(
     val color: RGBA,
-    val visible: Boolean? = null,
+    override val visible: Boolean = true,
 
 
     val opacity: Double = 1.0,
@@ -231,7 +234,7 @@ open class GradientPaint(
     override val type: String /* "GRADIENT_LINEAR" | "GRADIENT_RADIAL" | "GRADIENT_ANGULAR" | "GRADIENT_DIAMOND" */,
     val gradientTransform: ArrayList<ArrayList<java.lang.Double>>? = null /* JsTuple<Any, Any> */,
     val gradientStops: Array<ColorStop>? = null,
-    val visible: Boolean? = null,
+    override val visible: Boolean = true,
     val opacity: Double = 1.0,
     val blendMode: String? = null /* "PASS_THROUGH" | "NORMAL" | "DARKEN" | "MULTIPLY" | "LINEAR_BURN" | "COLOR_BURN" | "LIGHTEN" | "SCREEN" | "LINEAR_DODGE" | "COLOR_DODGE" | "OVERLAY" | "SOFT_LIGHT" | "HARD_LIGHT" | "DIFFERENCE" | "EXCLUSION" | "HUE" | "SATURATION" | "COLOR" | "LUMINOSITY" */,
 
@@ -252,7 +255,7 @@ open class ImagePaint(
     val filters: ImageFilters? = null,
 
 
-    val visible: Boolean? = null,
+    override val visible: Boolean = false,
 
 
     val opacity: Double = 1.0,
@@ -600,6 +603,7 @@ class GroupNodeImpl(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 ) : Serializable, GroupNode {
 
     override val x: Double
@@ -662,7 +666,7 @@ interface BlendMixin {
     val blendMode: String /* "PASS_THROUGH" | "NORMAL" | "DARKEN" | "MULTIPLY" | "LINEAR_BURN" | "COLOR_BURN" | "LIGHTEN" | "SCREEN" | "LINEAR_DODGE" | "COLOR_DODGE" | "OVERLAY" | "SOFT_LIGHT" | "HARD_LIGHT" | "DIFFERENCE" | "EXCLUSION" | "HUE" | "SATURATION" | "COLOR" | "LUMINOSITY" */?
     val isMask: Boolean?
 
-    //    val effects: Array<Any /* ShadowEffect | BlurEffect */>?
+        val effects: Array<Effect /* ShadowEffect | BlurEffect */>?
     val effectStyleId: String?
 
 }
@@ -677,6 +681,7 @@ interface ContainerMixin {
 @TypeFor(field = "type", adapter = FillTypeAdapter::class)
 interface Paint {
     val type: String
+    val visible: Boolean
 }
 
 //
@@ -884,6 +889,7 @@ open class FrameNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -999,6 +1005,7 @@ open class RectangleNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin, RectangleCornerMixin {
 
     override val x: Double
@@ -1058,6 +1065,7 @@ open class LineNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin {
 
     override val x: Double
@@ -1121,6 +1129,7 @@ open class EllipseNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1185,6 +1194,7 @@ open class PolygonNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1250,6 +1260,7 @@ open class StarNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1314,6 +1325,7 @@ open class VectorNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 //    override val x: Double
 //        get() = absoluteBoundingBox.x
@@ -1408,6 +1420,7 @@ open class TextNode(
     override val rotation: Double,
     override val width: Double,
     override val height: Double, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin {
@@ -1498,6 +1511,7 @@ open class ComponentNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 ) : Serializable, DefaultFrameMixin {
 
     override val x: Double
@@ -1585,6 +1599,7 @@ open class InstanceNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -1650,6 +1665,7 @@ open class BooleanOperationNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
+    override val effects: Array<Effect>? = null,
 
     ) : Serializable, DefaultShapeMixin, ChildrenMixin, CornerMixin {
 
@@ -1728,7 +1744,7 @@ open class TextStyle(
 
 open class EffectStyle(
     override val type: String? /* "EFFECT" */,
-//    val effects: Array<Any /* ShadowEffect | BlurEffect */>,
+    val effects: Array<Any /* ShadowEffect | BlurEffect */>,
     override val id: String? = null,
     override val name: String? = null,
     override val description: String? = null,
