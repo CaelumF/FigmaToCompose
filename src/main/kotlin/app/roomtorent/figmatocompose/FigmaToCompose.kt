@@ -51,7 +51,7 @@ fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(file
 
 class Settings private constructor(){
     companion object
-    open class Optimizations private constructor() {
+    class Optimizations private constructor() {
         companion object {
             val omitExtraShadows: Boolean = true
         }
@@ -68,11 +68,24 @@ fun Application.main() {
             val nodeJsonToConvert = call.receive<String>();
             try {
                 val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
-                val mainComposableContent = makeCompose(parsedFigmaFile).removeNoAffectPatterns()
+                val rootComposable = true
+                val mainComposableContent = makeCompose(parsedFigmaFile) {
+                    if(rootComposable) {
+                        fillMaxSize()
+                    }
+                } .removeNoAffectPatterns()
                 val identifier = (parsedFigmaFile.name ?: "unnamed").toKotlinIdentifier()
 
                 val joinedComposables = composables.values.joinToString(separator = "\n")
                 val upperMostComposable = """
+                        @Composable()
+                        @Preview()
+                        fun AndroidPreview_$identifier() {
+                            Box(Modifier.preferredSize(360.dp, 640.dp)) {
+                                $identifier()
+                            }
+                        }
+                        
                         @Composable()
                         @Preview()
                         fun $identifier() {
@@ -161,7 +174,7 @@ fun vectorFrameToCompose(node: DefaultFrameMixin): String {
     ${"Box"
         .args(Mods {
             preferredSize(node.width, node.height)
-            paintVectorPaint("R.drawable.ic_${node.name?.toLowerCase()}" ?: throw Exception(""))
+            paintVectorPaint("R.drawable.${node.name?.toLowerCase()}" ?: throw Exception(""))
             addStyleMods(node)
         })}
     """.trimIndent()
@@ -204,15 +217,20 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
         }
         is TextNode -> with(node) {
             """
-                ${node.characters?.let { text ->
+                ${node.characters?.let { text -> 
                 "Text".args("\"$text\"", Mods(extraModifiers) {
-                    preferredWidth(node.width)
-                    preferredHeight(node.height)
+                    wrapContentHeight(when(node.textAlignVertical) { 
+                        "TOP" -> Modifier.Alignment.Top
+                        "CENTER" -> Modifier.Alignment.CenterVertically
+                        "BOTTOM" -> Modifier.Alignment.Bottom
+                        
+                        else -> throw Exception("Alignment ${node.textAlignVertical} must be new")
+                    })
                 },
                     "style = currentTextStyle().copy".args(
                         "color = " + when (this.fills?.get(0)?.type) {
                             "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
-                                this.color.toComposeColor()
+                                this.color.toComposeColor(node.opacity.toFloat())
                             }
                             else -> "Color.BLACK"
                         },

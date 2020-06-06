@@ -158,6 +158,7 @@ open class ArcData(
 interface Effect {
     val type: String
 }
+
 open class ShadowEffect(
     override val type: String /* "DROP_SHADOW" | "INNER_SHADOW" */,
     val color: RGBA? = null,
@@ -368,7 +369,7 @@ open class VectorVertex(
     val y: Double? = null,
     val strokeCap: String /* "NONE" | "ROUND" | "SQUARE" | "ARROW_LINES" | "ARROW_EQUILATERAL" */,
     val strokeJoin: String /* "MITER" | "BEVEL" | "ROUND" */,
-    val cornerRadius: Double? = null,
+    val cornerRadius: Double = 0.0,
 
 
     val handleMirroring: String /* "NONE" | "ANGLE" | "ANGLE_AND_LENGTH" */,
@@ -666,7 +667,7 @@ interface BlendMixin {
     val blendMode: String /* "PASS_THROUGH" | "NORMAL" | "DARKEN" | "MULTIPLY" | "LINEAR_BURN" | "COLOR_BURN" | "LIGHTEN" | "SCREEN" | "LINEAR_DODGE" | "COLOR_DODGE" | "OVERLAY" | "SOFT_LIGHT" | "HARD_LIGHT" | "DIFFERENCE" | "EXCLUSION" | "HUE" | "SATURATION" | "COLOR" | "LUMINOSITY" */?
     val isMask: Boolean?
 
-        val effects: Array<Effect /* ShadowEffect | BlurEffect */>?
+    val effects: Array<Effect /* ShadowEffect | BlurEffect */>?
     val effectStyleId: String?
 
 }
@@ -699,7 +700,8 @@ interface Paint {
 interface GeometryMixin {
     val fills: Array<Paint>? /* ReadonlyArray<Any /* SolidPaint | GradientPaint | ImagePaint */> | Any */
 
-    //    val strokes: Array<Any /* SolidPaint | GradientPaint | ImagePaint */>?
+
+    val strokes: Array<Paint /* SolidPaint | SolidPaintGradientPaint | ImagePaint */>?
     val strokeWeight: Double?
     val strokeMiterLimit: Double?
     val strokeAlign: String? /* "CENTER" | "INSIDE" | "OUTSIDE" */
@@ -707,21 +709,20 @@ interface GeometryMixin {
     //    val strokeCap: Any? /* "NONE" | "ROUND" | "SQUARE" | "ARROW_LINES" | "ARROW_EQUILATERAL" | Any */
 //    val strokeJoin: Any? /* "MITER" | "BEVEL" | "ROUND" | Any */
     val dashPattern: Array<Double>?
-
     //    val fillStyleId: Any? /* String | Any */
     val strokeStyleId: String?
 }
 
 interface CornerMixin {
-    val cornerRadius: Double?
+    val cornerRadius: Double
     val cornerSmoothing: Double?
 }
 
 interface RectangleCornerMixin {
-    val topLeftRadius: Double?
-    val topRightRadius: Double?
-    val bottomLeftRadius: Double?
-    val bottomRightRadius: Double?
+    val topLeftRadius: Double
+    val topRightRadius: Double
+    val bottomLeftRadius: Double
+    val bottomRightRadius: Double
 }
 
 interface ExportMixin {
@@ -848,7 +849,6 @@ open class FrameNode(
 //    override val backgrounds: Array<Any>? = null,
     override val backgroundStyleId: String? = null,
     override val fills: Array<Paint>? = null,
-//    override val strokes: Array<Any>? = null,
     override val strokeWeight: Double? = null,
     override val strokeMiterLimit: Double? = null,
     override val strokeAlign: String? = null,
@@ -859,10 +859,10 @@ open class FrameNode(
     override val strokeStyleId: String? = null,
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
-    override val topLeftRadius: Double? = null,
-    override val topRightRadius: Double? = null,
-    override val bottomLeftRadius: Double? = null,
-    override val bottomRightRadius: Double? = null,
+    override val topLeftRadius: Double = 0.0,
+    override val topRightRadius: Double = 0.0,
+    override val bottomLeftRadius: Double = 0.0,
+    override val bottomRightRadius: Double = 0.0,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null,
     override val layoutMode: String? = null,
@@ -878,7 +878,7 @@ open class FrameNode(
     override val DoubleOfFixedChildren: Double? = null,
     override val overlayPositionType: String? = null,
 //    override val overlayBackground: Any? = null,
-    override val overlayBackgroundInteraction: String? = null, override val cornerRadius: Double? = 0.0,
+    override val overlayBackgroundInteraction: String? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -889,7 +889,7 @@ open class FrameNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -989,12 +989,12 @@ open class RectangleNode(
     override val strokeStyleId: String? = null,
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
-    override val topLeftRadius: Double? = null,
-    override val topRightRadius: Double? = null,
-    override val bottomLeftRadius: Double? = null,
-    override val bottomRightRadius: Double? = null,
+    override val topLeftRadius: Double = 0.0,
+    override val topRightRadius: Double = 0.0,
+    override val bottomLeftRadius: Double = 0.0,
+    override val bottomRightRadius: Double = 0.0,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1005,7 +1005,7 @@ open class RectangleNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin, RectangleCornerMixin {
 
     override val x: Double
@@ -1065,7 +1065,7 @@ open class LineNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 ) : Serializable, DefaultShapeMixin, ConstraintMixin {
 
     override val x: Double
@@ -1118,7 +1118,7 @@ open class EllipseNode(
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1129,7 +1129,7 @@ open class EllipseNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1183,7 +1183,7 @@ open class PolygonNode(
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1194,7 +1194,7 @@ open class PolygonNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1249,7 +1249,7 @@ open class StarNode(
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1260,7 +1260,7 @@ open class StarNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 
@@ -1314,7 +1314,7 @@ open class VectorNode(
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1325,7 +1325,7 @@ open class VectorNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 ) : Serializable, DefaultShapeMixin, ConstraintMixin, CornerMixin {
 //    override val x: Double
 //        get() = absoluteBoundingBox.x
@@ -1420,7 +1420,7 @@ open class TextNode(
     override val rotation: Double,
     override val width: Double,
     override val height: Double, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
 
     ) : Serializable, DefaultShapeMixin, ConstraintMixin {
@@ -1480,10 +1480,10 @@ open class ComponentNode(
     override val strokeStyleId: String? = null,
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
-    override val topLeftRadius: Double? = null,
-    override val topRightRadius: Double? = null,
-    override val bottomLeftRadius: Double? = null,
-    override val bottomRightRadius: Double? = null,
+    override val topLeftRadius: Double = 0.0,
+    override val topRightRadius: Double = 0.0,
+    override val bottomLeftRadius: Double = 0.0,
+    override val bottomRightRadius: Double = 0.0,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null,
     override val layoutMode: String? = null,
@@ -1500,7 +1500,7 @@ open class ComponentNode(
     override val overlayPositionType: String? = null,
 //    override val overlayBackground: Any? = null,
     override val overlayBackgroundInteraction: String? = null,
-    override val cornerRadius: Double? = 0.0,
+    override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1511,7 +1511,7 @@ open class ComponentNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 ) : Serializable, DefaultFrameMixin {
 
     override val x: Double
@@ -1567,10 +1567,10 @@ open class InstanceNode(
     override val strokeStyleId: String? = null,
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
-    override val topLeftRadius: Double? = null,
-    override val topRightRadius: Double? = null,
-    override val bottomLeftRadius: Double? = null,
-    override val bottomRightRadius: Double? = null,
+    override val topLeftRadius: Double = 0.0,
+    override val topRightRadius: Double = 0.0,
+    override val bottomLeftRadius: Double = 0.0,
+    override val bottomRightRadius: Double = 0.0,
 //    override val exportSettings: Array<Any>? = null,
     override val reactions: Array<Reaction>? = null,
     override val layoutMode: String? = null,
@@ -1587,7 +1587,7 @@ open class InstanceNode(
     override val overlayPositionType: String? = null,
 //    override val overlayBackground: Any? = null,
     override val overlayBackgroundInteraction: String? = null,
-    override val cornerRadius: Double? = 0.0,
+    override val cornerRadius: Double = 0.0,
 
     x: Double? = null,
     y: Double? = null,
@@ -1599,7 +1599,7 @@ open class InstanceNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -1654,7 +1654,7 @@ open class BooleanOperationNode(
 //    override val cornerRadius: Any? = null,
     override val cornerSmoothing: Double? = null,
 //    override val exportSettings: Array<Any>? = null,
-    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double? = 0.0,
+    override val reactions: Array<Reaction>? = null, override val cornerRadius: Double = 0.0,
     x: Double? = null,
     y: Double? = null,
     rotation: Double? = null,
@@ -1665,7 +1665,7 @@ open class BooleanOperationNode(
     val realrotation: Double? = rotation,
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
-    override val effects: Array<Effect>? = null,
+    override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
 
     ) : Serializable, DefaultShapeMixin, ChildrenMixin, CornerMixin {
 
