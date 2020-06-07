@@ -130,6 +130,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
             if (omitIfAllZero && topLeftRadius == 0.0) return
             if (simplifyToCornerRadiusIfEqual) {
                 ownModifiers.add(CornerRadius(topLeftRadius.toFloat()))
+                return
             }
         }
         ownModifiers.add(
