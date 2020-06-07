@@ -14,8 +14,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {
-                    preferredHeight(child.height)
-                    preferredWidth(child.width)
+                    preferredSize(child.width, child.width)
                     when (child.layoutAlign) {
                         "MIN" -> gravity(Modifier.AlignmentOption.Start)
                         "MAX" -> gravity(Modifier.AlignmentOption.End)
@@ -39,8 +38,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
                     ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {
-                    preferredHeight(child.height)
-                    preferredWidth(child.width)
+                    preferredSize(child.width, child.width)
                     when (child.layoutAlign) {
                         "MIN" -> gravity(Modifier.AlignmentOption.Start)
                         "MAX" -> gravity(Modifier.AlignmentOption.End)
