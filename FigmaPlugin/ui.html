@@ -41,18 +41,6 @@
     }
 
     window.onmessage = async (event) => {
-        if (event.data.pluginMessage.type === 'network') {
-            var request = new XMLHttpRequest()
-            // This link has random lorem ipsum text
-            request.open('POST', 'http://localhost:9020')
-            request.responseType = 'text'
-            request.onload = () => {
-                // window.parent.postMessage({pluginMessage: request.response}, '*')
-                console.log("We got " + request.response)
-            };
-            debugger;
-            request.send(event.data.pluginMessage.data)
 
-        }
     }
 </script>
