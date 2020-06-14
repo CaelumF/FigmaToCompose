@@ -51,9 +51,9 @@
 </script>
 
 
-<div class="p-xxsmall">
+<div class="pl-xxsmall pr-xxsmall">
 
-    <h4>Jetpack to Compose</h4>
+    <h4 class="mt-xxsmall">Jetpack to Compose</h4>
     <p class="px">Requires <a href="https://github.com/CaelumF/FigmaToCompose">server</a> to be running on your machine</p>
     <hr  class="mt-xsmall" style="border-bottom: none;">
 
