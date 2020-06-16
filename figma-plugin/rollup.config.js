@@ -16,6 +16,7 @@ import htmlBundle from 'rollup-plugin-html-bundle';
 const production = !process.env.ROLLUP_WATCH;
 
 export default [{
+	external: ['lodash'],
 	input: 'src/main.js',
 	output: {
 		format: 'iife',

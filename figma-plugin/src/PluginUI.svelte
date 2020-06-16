@@ -4,23 +4,25 @@
     import {Checkbox} from 'figma-plugin-ds-svelte';
     import {OnboardingTip} from 'figma-plugin-ds-svelte';
 
-    let serverAddress = "localhost:9081"
+    let serverAddress = "http://localhost:9020";
     let copyToClipboard = true;
     let separateComposablesForComponents = true;
-    let currentSelected = null;
-    let generatedOutput = null
-    $: disabled = currentSelected == null
+    let currentSelectedName = null;
+    let rootSelectionCount = 0;
+    let generatedOutput = null;
+    $: disabled = currentSelectedName == null;
+    let errors = [];
 
-    function generate() {
+    function generatePressed() {
         parent.postMessage({
             pluginMessage: {
                 'type': 'generate',
                 'serverAddress': serverAddress,
                 'copyToClipboard': copyToClipboard,
                 'separateComposablesForComponents': separateComposablesForComponents,
-                'currentSelected': currentSelected
+                'currentSelected': rootSelectionCount
             }
-        }, '*');``
+        }, '*');
     }
 
     function close() {
@@ -32,20 +34,34 @@
     }
 
     onmessage = (event) => {
-        if (event.type === "newNodeSelection") {
-            currentSelected = event.selection
+        console.log(event)
+        if (event.data.pluginMessage.type === "newNodeSelection") {
+            currentSelectedName = event.data.pluginMessage.selectionName;
+            rootSelectionCount = event.data.pluginMessage.rootSelectionCount;
+            console.log("We got an event up in hereee", currentSelectedName, rootSelectionCount)
         }
-        if(event.type === "post") {
+        if (event.data.pluginMessage.type === "post") {
             let request = new XMLHttpRequest()
             // This link has random lorem ipsum text
             request.open('POST', serverAddress)
             request.responseType = 'text'
-            request.onload = () => {
+            request.onload = function () {
                 // window.parent.postMessage({pluginMessage: request.response}, '*')
                 console.log("We got " + request.response)
+                console.log(request.response)
                 generatedOutput = request.response;
             };
-            request.send(event.data.pluginMessage.data)
+            //TODO: Avoid as many internal JSON serial and deserialzing
+            let body = JSON.stringify({
+                rootiestNode: JSON.parse(event.data.pluginMessage.data),
+                copyToClipboard: copyToClipboard,
+                separateComposablesForEachComponent: separateComposablesForComponents
+            });
+
+            request.send(body)
+        }
+        if (event.data.pluginMessage.type === "error") {
+
         }
     }
 </script>
@@ -54,8 +70,8 @@
 <div class="pl-xxsmall pr-xxsmall">
 
     <h4 class="mt-xxsmall">Jetpack to Compose</h4>
-    <p class="px">Requires <a href="https://github.com/CaelumF/FigmaToCompose">server</a> to be running on your machine</p>
-    <hr  class="mt-xsmall" style="border-bottom: none;">
+    <p class="px">The <a href="https://github.com/CaelumF/FigmaToCompose">server</a> should be running</p>
+    <hr class="mt-xsmall" style="border-bottom: none;">
 
     <label for="server">Server address</label>
     <div class="flex column ml-xxsmall">
@@ -68,16 +84,17 @@
 
     <div class="flex column">
         <Checkbox bind:checked={copyToClipboard}>Copy to clipboard</Checkbox>
-        <Checkbox bind:checked={separateComposablesForComponents}>
-            Separate Composable for each Component
-        </Checkbox>
+<!--        TODO: This, if there appears to be a need for it-->
+<!--        <Checkbox bind:checked={separateComposablesForComponents}>-->
+<!--            Separate Composable for each Component (-->
+<!--        </Checkbox>-->
     </div>
-    <hr  class="mt-xsmall" style="border-bottom: none;">
+    <hr class="mt-xsmall" style="border-bottom: none;">
 
     <Textarea placeholder="Will output here" bind:value={generatedOutput}/>
     <div class="flex row-reverse">
         {#if disabled}
-             Select a node to start
+            Select a node to start
         {:else}
             Ready!
         {/if}
@@ -85,7 +102,7 @@
 
     <div class="buttons flex justify-content-between ">
         <Button on:click={close} variant="secondary" class="mr-xsmall">Close</Button>
-        <Button on:click={generate} bind:disabled={disabled}>Generate</Button>
+        <Button on:click={generatePressed} bind:disabled={disabled}>Generate</Button>
     </div>
 
 </div>
