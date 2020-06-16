@@ -6,6 +6,7 @@
 
     let serverAddress = "http://localhost:9020";
     let copyToClipboard = true;
+    let resetDecollisionMap = true;
     let separateComposablesForComponents = true;
     let currentSelectedName = null;
     let rootSelectionCount = 0;
@@ -55,6 +56,7 @@
             let body = JSON.stringify({
                 rootiestNode: JSON.parse(event.data.pluginMessage.data),
                 copyToClipboard: copyToClipboard,
+                resetDecollisionMap: resetDecollisionMap,
                 separateComposablesForEachComponent: separateComposablesForComponents
             });
 
@@ -84,7 +86,8 @@
 
     <div class="flex column">
         <Checkbox bind:checked={copyToClipboard}>Copy to clipboard</Checkbox>
-<!--        TODO: This, if there appears to be a need for it-->
+        <Checkbox bind:checked={resetDecollisionMap}>Reset list of used identifiers</Checkbox>
+        <!--        TODO: This, if there appears to be a need for it-->
 <!--        <Checkbox bind:checked={separateComposablesForComponents}>-->
 <!--            Separate Composable for each Component (-->
 <!--        </Checkbox>-->

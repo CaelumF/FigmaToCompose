@@ -61,6 +61,7 @@ class Settings private constructor(){
 class ConvertRequest() {
     var rootiestNode: BaseNodeMixin? = null
     var copyToClipboard: Boolean? = null
+    var resetDecollisionMap: Boolean? = null
     var separateComposablesForEachComponent: Boolean? = null
 }
 
@@ -74,9 +75,15 @@ fun Application.main() {
 
     routing {
         post("/") {
+
             val nodeJsonToConvert = call.receive<String>();
             try {
+                //          Re-set state. TODO: Remove the need to do this
                 val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
+                composables = hashMapOf()
+
+                if(convertRequest.resetDecollisionMap == true) decollisionMap = HashMap<String, String>()
+
                 val mainComposableContent = makeCompose(convertRequest.rootiestNode ?: throw Exception("Incomplete request")) {
                         fillMaxSize()
                 } .removeNoAffectPatterns()
@@ -132,7 +139,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 //Store a mapping of modified to original.
 //If an original doesn't match its associated modified, it is a collision and we can add a number, and check again
 //This requires more lookups than it could, which can be fixed if it ever matters.
-private val decollisionMap = HashMap<String, String>()
+private var decollisionMap = HashMap<String, String>()
 private fun String.toKotlinIdentifier(): String {
     val original = this
     val changed = this.replace(Regex("[\\s-/,.]"), "_")
