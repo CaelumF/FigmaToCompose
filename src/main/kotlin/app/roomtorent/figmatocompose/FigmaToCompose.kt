@@ -6,8 +6,6 @@ import ComponentNode
 import DefaultFrameMixin
 import ExportSettingsSVG
 import FigmaFile
-import GeometryMixin
-import GradientPaint
 import GroupNodeImpl
 import InstanceNode
 import LayoutMixin
@@ -20,6 +18,7 @@ import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.DefaultHeaders
 import io.ktor.request.receive
@@ -32,6 +31,7 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.*
 import java.util.HashMap
+import kotlin.properties.Delegates
 
 fun updateFile(fileUrl: String) {
     val freshFigmaFile = "https://api.figma.com/v1/files/$fileUrl"
@@ -58,23 +58,37 @@ class Settings private constructor(){
     }
 }
 
+class ConvertRequest() {
+    var rootiestNode: BaseNodeMixin? = null
+    var copyToClipboard: Boolean? = null
+    var resetDecollisionMap: Boolean? = null
+    var separateComposablesForEachComponent: Boolean? = null
+}
+
 fun Application.main() {
     install(DefaultHeaders)
+    install(CORS) {
+      anyHost()
+    }
     install(CallLogging)
     val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
 
     routing {
         post("/") {
+
             val nodeJsonToConvert = call.receive<String>();
             try {
-                val parsedFigmaFile = Klaxon().parse<BaseNodeMixin>(StringBufferInputStream(nodeJsonToConvert))!!
-                val rootComposable = true
-                val mainComposableContent = makeCompose(parsedFigmaFile) {
-                    if(rootComposable) {
+                //          Re-set state. TODO: Remove the need to do this
+                val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
+                composables = hashMapOf()
+
+                if(convertRequest.resetDecollisionMap == true) decollisionMap = HashMap<String, String>()
+
+                val mainComposableContent = makeCompose(convertRequest.rootiestNode ?: throw Exception("Incomplete request")) {
                         fillMaxSize()
-                    }
                 } .removeNoAffectPatterns()
-                val identifier = (parsedFigmaFile.name ?: "unnamed").toKotlinIdentifier()
+
+                val identifier = (convertRequest.rootiestNode?.name ?: "unnamed").toKotlinIdentifier()
 
                 val joinedComposables = composables.values.joinToString(separator = "\n")
                 val upperMostComposable = """
@@ -101,10 +115,12 @@ fun Application.main() {
                     .removeNoAffectPatterns()
 
                 call.respond(output)
-                println("Processed one, setting clipboard to output :) ")
-                //Set clipboard to new output
-                val selection = StringSelection(output)
-                clipboard.setContents(selection, selection)
+                if(convertRequest.copyToClipboard == true) {
+                    println("Processed one, setting clipboard to output :) ")
+                    val selection = StringSelection(output)
+                    clipboard.setContents(selection, selection)
+                }
+
             } catch (e: Exception) {
                 println("We rockin' an axeception: $e")
                 e.printStackTrace()
@@ -123,7 +139,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 //Store a mapping of modified to original.
 //If an original doesn't match its associated modified, it is a collision and we can add a number, and check again
 //This requires more lookups than it could, which can be fixed if it ever matters.
-private val decollisionMap = HashMap<String, String>()
+private var decollisionMap = HashMap<String, String>()
 private fun String.toKotlinIdentifier(): String {
     val original = this
     val changed = this.replace(Regex("[\\s-/,.]"), "_")

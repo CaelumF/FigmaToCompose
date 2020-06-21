@@ -1,46 +1,61 @@
-// This plugin will open a modal to prompt the user to enter a number, and
-// it will then create that many rectangles on the screen.
+// @ts-ignore
+import get from '../node_modules/lodash/get'
+figma.showUI(__html__, {width: 10 * 30, height: 16 * 30});
 
-// This file holds the main code for the plugins. It has access to the *document*.
-// You can access browser APIs in the <script> tag inside "ui.html" which has a
-// full browser enviroment (see documentation).
+function getAllProperties(obj: BaseNode) {
+    let values = {
+        children: Array
+    }
+    let objID = obj.id
 
-// This shows the HTML page in "ui.html".
-figma.showUI(__html__, {width: 232, height: 208 });
+    let allProps = []
+        , curr = obj
+    do {
+        let props = Object.getOwnPropertyNames(curr)
+        props.forEach(function (key) {
+            if (allProps.indexOf(key) === -1)
+                allProps.push(key)
+            // debugger;
+            try {
+                values[key] = curr[key]
+                curr.id = objID
+            } catch (e) {
+                if (e != "TypeError: id is read-only") {
+                    console.log("Error: Not adding " + key)
+                    console.log("error details " + e)
+                    console.log(objID)
+                }
+            }
+        })
 
-// Calls to "parent.postMessage" from within the HTML page will trigger this
-// callback. The callback will be passed the "pluginMessage" property of the
-// posted message.
+        if ("children" in obj) {
+            let childrenExpanded = []
+            for (let child in obj.children) {
+                let child1 = obj.children[child];
+                if (typeof child1 !== "string") {
+                    childrenExpanded.push(getAllProperties(child1));
+                }
+            }
+            // @ts-ignore
+            values.children = childrenExpanded
+        }
+    } while (curr = Object.getPrototypeOf(curr))
+    return values
+}
+
+figma.on("selectionchange", () => {
+    figma.ui.postMessage({
+            type: "newNodeSelection",
+            selectionName: get(figma.currentPage, 'selection[0].name', null),
+            rootSelectionCount: figma.currentPage.selection.length
+        }
+    )
+})
+
 figma.ui.onmessage = msg => {
-	// One way of distinguishing between different types of messages sent from
-	// your HTML page is to use an object with a "type" property like this.
-	if (msg.type === 'create-shapes') {
-
-		const nodes: SceneNode[] = [];
-
-		for (let i = 0; i < msg.count; i++) {
-
-			var shape;
-
-			if (msg.shape === 'rectangle') {
-				shape = figma.createRectangle();
-			} else if (msg.shape === 'triangle') {
-				shape = figma.createPolygon();
-			} else {
-				shape = figma.createEllipse();
-			}
-
-			shape.x = i * 150;
-			shape.fills = [{type: 'SOLID', color: {r: 1, g: 0.5, b: 0}}];
-			figma.currentPage.appendChild(shape);
-			nodes.push(shape);
-		}
-
-		figma.currentPage.selection = nodes;
-		figma.viewport.scrollAndZoomIntoView(nodes);
-	}
-
-	// Make sure to close the plugin when you're done. Otherwise the plugin will
-	// keep running, which shows the cancel button at the bottom of the screen.
-	figma.closePlugin();
+    if (msg.type == 'generate') {
+        let allProps = getAllProperties(figma.currentPage.selection[0])
+        figma.ui.postMessage({type: "post", data: JSON.stringify(allProps)})
+        console.log("allProps:", allProps);
+    }
 };

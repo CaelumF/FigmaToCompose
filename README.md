@@ -1,4 +1,4 @@
-### Figma design to Jetpack Compose converter (FDJCC)
+# Designs to Jetpack Compose converter 
 Easily convert [Figma](https://www.figma.com/) designs directly to [Jetpack Compose](https://developer.android.com/jetpack/compose) code. (Not affiliated with either of them)
 
 This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
@@ -30,13 +30,25 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 
 # Usage:
 
+
+# Usage:
+With the [plugin](todo:) installed, clone this repo, cd into it and run:
+
+`./gradlw run -config=application.conf`
+
+# Development
+
 The backend server accepts Figma's json on a post to `/` on port 9020.
 
+## Figma plugin development
+###### For Linux
+
+ Unfortunately for now a shared clipboard from a Windows or Mac VM or a host running [Barrier](https://github.com/debauchee/barrier) is needed to "conveniently" use local changes,
+ until Figma supports developing / running unpublished plugins on Linux 
+
+###### Mac or Windows
 Within the FigmaPlugin directory lies the code to a plugin that can be imported on Windows or Mac. In Figma client app (not web), go to
 Plugins -> Development > New Plugin and select the manifest.json
-
-For **Linux**, unfortunately for now a shared clipboard from a VM or a host running [Barrier](https://github.com/debauchee/barrier) is needed to "conveniently" use,
- until Figma supports developing / running unpublished plugins on Linux )
 
 # TODO:
 See Issues
