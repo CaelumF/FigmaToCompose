@@ -1,7 +1,0 @@
-{
-  "name": "Figma to Compose",
-  "id": "836732926375628873",
-  "api": "1.0.0",
-  "main": "figmaToCompose.ts",
-  "ui": "ui.html"
-}
