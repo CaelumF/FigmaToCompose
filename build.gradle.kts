@@ -51,7 +51,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = "FigmaToCompose.AppKt"
+    mainClassName = "app.roomtorent.figmatocompose.EngineMain"
 
 }
 val fatJar = task("fatJar", type = Jar::class) {

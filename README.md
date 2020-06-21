@@ -1,8 +1,8 @@
-# Designs to Jetpack Compose converter 
+# Designs to Jetpack Compose converter
 Easily convert [Figma](https://www.figma.com/) designs directly to [Jetpack Compose](https://developer.android.com/jetpack/compose) code. (Not affiliated with either of them)
 
 This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
-to Jetpack Compose and sets the clipboard to it 
+to Jetpack Compose and sets the clipboard to it
 
 # Use cases
 
@@ -10,7 +10,7 @@ Often times designs contain non-repeated distances, colours and proportions. Rep
 
 Primarily, this is to cut out taking measurements, reduce design-implementation back and fourth and save time/energy even when the designer and implementer are the same person
 
-# Features / mappings 
+# Features / mappings
 
 
 | Figma feature   |      Jetpack Compose feature      |  Note | Missing / to-do
@@ -28,14 +28,13 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 |  |   | |
 |  |   | |
 
-# Usage:
-
 
 # Usage:
 With the [plugin](todo:) installed, clone this repo, cd into it and run:
 
-`./gradlw run -config=application.conf`
+`./gradlew run --args="-config=application.conf"`
 
+Now you can open the plugin window in Figma, select a node, and click "Genarate" to get the Jetpack Compose code to display it!
 # Development
 
 The backend server accepts Figma's json on a post to `/` on port 9020.
@@ -44,7 +43,7 @@ The backend server accepts Figma's json on a post to `/` on port 9020.
 ###### For Linux
 
  Unfortunately for now a shared clipboard from a Windows or Mac VM or a host running [Barrier](https://github.com/debauchee/barrier) is needed to "conveniently" use local changes,
- until Figma supports developing / running unpublished plugins on Linux 
+ until Figma supports developing / running unpublished plugins on Linux
 
 ###### Mac or Windows
 Within the FigmaPlugin directory lies the code to a plugin that can be imported on Windows or Mac. In Figma client app (not web), go to

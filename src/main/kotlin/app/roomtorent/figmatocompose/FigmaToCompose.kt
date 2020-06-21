@@ -25,27 +25,12 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.post
 import io.ktor.routing.routing
-import tokeyboi
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.*
 import java.util.HashMap
 import kotlin.properties.Delegates
-
-fun updateFile(fileUrl: String) {
-    val freshFigmaFile = "https://api.figma.com/v1/files/$fileUrl"
-        .httpGet()
-        .header("X-Figma-Token", tokeyboi)
-        .responseString()
-//    Klaxon().parseJsonObject(Klaxon().toReader(StringBufferInputStream(freshFigmaFile.third.get())))
-    val parsedFigmaFile = Klaxon().parse<FigmaFile>(StringBufferInputStream(freshFigmaFile.third.get()))!!
-    val fos: FileOutputStream = FileOutputStream(File(fileUrl))
-    val os = ObjectOutputStream(fos)
-    os.writeObject(parsedFigmaFile)
-    os.close()
-    fos.close()
-}
 
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
