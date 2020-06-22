@@ -5,7 +5,6 @@ This project contains a plugin that sends the selected Figma json to locahost:90
 to Jetpack Compose and sets the clipboard to it
 
 # Use cases
-
 Often times designs contain non-repeated distances, colours and proportions. Replicating these designs can be very tedious, and discrepancies in design and implementation can lead to "split realities".
 
 Primarily, this is to cut out taking measurements, reduce design-implementation back and fourth and save time/energy even when the designer and implementer are the same person
@@ -14,7 +13,6 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 
 |    feature    | Jetpack Compose feature               | Note                                                                                              | Missing / to-do                                    |   |
 |:-------------:|---------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------|---|
-|               |                                       |                                                                                                   |                                                    |   |
 | Frame         | Constraint Layout                     | Supports start, end, scale, stretch, start-end (maintain margins dp), center                      | auto remove redundant constraints                  |   |
 | Nested nodes  | Composables with nested calls to them | This is a nice solution for updating implementation to design                                     |                                                    |   |
 | Group         | Box                                   |                                                                                                   |                                                    |   |
@@ -24,7 +22,7 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 | Rectangle     | Box                                   | Includes generic "style mods" (bg, shadow, )                                                      |                                                    |   |
 | Shadow fill   | Elevation                             | Does not work well for non-rectangles or where shadow is applied to parent of many children       | Other shapes, find solution for shadows on parents |   |
 | Corner Radius | .clip(CornerRadiusShape)              |                                                                                                   |                                                    |   |
-| Gradient fill |                                       |                                                                                                   |                                                    |   |
+| Gradient fill | Paint(LinearGradient)                 |  Only currently supports horizontal gradients                                                     |                                                    |   |
 
 # Usage:
 With the [plugin](todo:) installed, clone this repo, cd into it and run:

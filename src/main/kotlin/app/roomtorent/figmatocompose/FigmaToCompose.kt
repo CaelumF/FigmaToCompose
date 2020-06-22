@@ -21,6 +21,7 @@ import io.ktor.application.install
 import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.DefaultHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.post
@@ -44,6 +45,7 @@ class Settings private constructor(){
 }
 
 class ConvertRequest() {
+    val test: Boolean? = null
     var rootiestNode: BaseNodeMixin? = null
     var copyToClipboard: Boolean? = null
     var resetDecollisionMap: Boolean? = null
@@ -63,8 +65,9 @@ fun Application.main() {
 
             val nodeJsonToConvert = call.receive<String>();
             try {
-                //          Re-set state. TODO: Remove the need to do this
                 val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
+                if(convertRequest.test == true) call.respond(HttpStatusCode.Accepted, "we good")
+                //          Re-set state. TODO: Remove the need to do this
                 composables = hashMapOf()
 
                 if(convertRequest.resetDecollisionMap == true) decollisionMap = HashMap<String, String>()
