@@ -66,7 +66,7 @@ fun Application.main() {
             val nodeJsonToConvert = call.receive<String>();
             try {
                 val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
-                if(convertRequest.test == true) call.respond(HttpStatusCode.Accepted, "we good")
+                if(convertRequest.test == true) call.respond(HttpStatusCode.Accepted, "")
                 //          Re-set state. TODO: Remove the need to do this
                 composables = hashMapOf()
 
