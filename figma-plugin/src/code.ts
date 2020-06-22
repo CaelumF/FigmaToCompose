@@ -1,6 +1,17 @@
 // @ts-ignore
 import get from '../node_modules/lodash/get'
+
 figma.showUI(__html__, {width: 10 * 30, height: 16 * 30});
+
+// Send initial selection
+if (figma.currentPage.selection.length > 0) {
+    figma.ui.postMessage({
+            type: "newNodeSelection",
+            selectionName: get(figma.currentPage, 'selection[0].name', null),
+            rootSelectionCount: figma.currentPage.selection.length
+        }
+    )
+}
 
 function getAllProperties(obj: BaseNode) {
     let values = {
