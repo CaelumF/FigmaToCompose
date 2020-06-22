@@ -35,11 +35,9 @@
     }
 
     onmessage = (event) => {
-        console.log(event)
         if (event.data.pluginMessage.type === "newNodeSelection") {
             currentSelectedName = event.data.pluginMessage.selectionName;
             rootSelectionCount = event.data.pluginMessage.rootSelectionCount;
-            console.log("We got an event up in hereee", currentSelectedName, rootSelectionCount)
         }
         if (event.data.pluginMessage.type === "post") {
             let request = new XMLHttpRequest()
@@ -48,8 +46,6 @@
             request.responseType = 'text'
             request.onload = function () {
                 // window.parent.postMessage({pluginMessage: request.response}, '*')
-                console.log("We got " + request.response)
-                console.log(request.response)
                 generatedOutput = request.response;
             };
             //TODO: Avoid as many internal JSON serial and deserialzing
