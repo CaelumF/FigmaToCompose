@@ -1,17 +1,22 @@
 <script>
     import {GlobalCSS} from 'figma-plugin-ds-svelte';
-    import {Button, Input, Label, SelectMenu, Textarea} from 'figma-plugin-ds-svelte';
+    import {Button, Input, Label, SelectMenu, Textarea, Icon, IconPlay, IconResolveFilled, IconWarning, IconButton} from 'figma-plugin-ds-svelte';
     import {Checkbox} from 'figma-plugin-ds-svelte';
     import {OnboardingTip} from 'figma-plugin-ds-svelte';
 
     let serverAddress = "http://localhost:9020";
+    let correctAddress = null
+
     let copyToClipboard = true;
     let resetDecollisionMap = true;
     let separateComposablesForComponents = true;
+
     let currentSelectedName = null;
     let rootSelectionCount = 0;
     let generatedOutput = null;
+
     $: disabled = currentSelectedName == null;
+    $: connectionIcon = correctAddress == null ? IconPlay : (correctAddress === true ? IconResolveFilled : IconWarning)
     let errors = [];
 
     function generatePressed() {
@@ -31,7 +36,31 @@
     }
 
     function testConnection() {
-        parent.postMessage({pluginMessage: {'type': 'testConnection'}}, '*')
+        // parent.postMessage({pluginMessage: {'type': 'testConnection'}}, '*')
+        sendMessageToJavaBackend(JSON.stringify({ test: true}))
+    }
+
+    function connectionError(message) {
+        correctAddress = false
+    }
+
+    function sendMessageToJavaBackend(body) {
+        let request = new XMLHttpRequest()
+        // This link has random lorem ipsum text
+        request.open('POST', serverAddress)
+        request.responseType = 'text'
+        request.onload = function () {
+            correctAddress = true
+            generatedOutput = request.response;
+        };
+        request.onerror = (e) => {
+            connectionError(e);
+        }
+        request.onabort = (e) => {
+            connectionError(e);
+        }
+
+        request.send(body)
     }
 
     onmessage = (event) => {
@@ -40,28 +69,20 @@
             rootSelectionCount = event.data.pluginMessage.rootSelectionCount;
         }
         if (event.data.pluginMessage.type === "post") {
-            let request = new XMLHttpRequest()
-            // This link has random lorem ipsum text
-            request.open('POST', serverAddress)
-            request.responseType = 'text'
-            request.onload = function () {
-                // window.parent.postMessage({pluginMessage: request.response}, '*')
-                generatedOutput = request.response;
-            };
             //TODO: Avoid as many internal JSON serial and deserialzing
-            let body = JSON.stringify({
+            sendMessageToJavaBackend(JSON.stringify({
                 rootiestNode: JSON.parse(event.data.pluginMessage.data),
                 copyToClipboard: copyToClipboard,
                 resetDecollisionMap: resetDecollisionMap,
                 separateComposablesForEachComponent: separateComposablesForComponents
-            });
-
-            request.send(body)
+            }));
         }
         if (event.data.pluginMessage.type === "error") {
 
         }
     }
+
+
 </script>
 
 
@@ -74,7 +95,12 @@
     <label for="server">Server address</label>
     <div class="flex column ml-xxsmall">
         <Input id="server" bind:value={serverAddress} borders="true"/>
-        <Button variant="secondary" on:click={testConnection}>Test connection</Button>
+        <Button variant="secondary" on:click={testConnection}>
+            Test connection <Icon iconName={connectionIcon}/>
+        </Button>
+        {#if correctAddress === false}
+            <p class="error-text">Can't connect to this address :( is the server running okay?</p>
+        {/if}
     </div>
 
     <hr class="mt-xsmall" style="border-bottom: none;">
@@ -83,10 +109,6 @@
     <div class="flex column">
         <Checkbox bind:checked={copyToClipboard}>Copy to clipboard</Checkbox>
         <Checkbox bind:checked={resetDecollisionMap}>Reset list of used identifiers</Checkbox>
-        <!--        TODO: This, if there appears to be a need for it-->
-<!--        <Checkbox bind:checked={separateComposablesForComponents}>-->
-<!--            Separate Composable for each Component (-->
-<!--        </Checkbox>-->
     </div>
     <hr class="mt-xsmall" style="border-bottom: none;">
 
@@ -110,5 +132,8 @@
 <style>
 
     /* Add additional global or scoped styles here */
-
+    .error-text {
+        font-size: xx-small;
+        color: indianred;
+    }
 </style>
