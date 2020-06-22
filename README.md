@@ -12,22 +12,19 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 
 # Features / mappings
 
-
-| Figma feature   |      Jetpack Compose feature      |  Note | Missing / to-do
-|----------|:-------------:|:------:|------:|
-| Frame | Constraint Layout | Supports start, end, scale, stretch, start-end (maintain margins dp), center | auto remove redundant constraints
-| Nested nodes | Composables with nested calls to them  | This is a nice solution for updating implementation to design|
-| Group |    Box   |   |
-| Text        | Text |    Supports solid colours, font size vertical and horizontal text align | Font family, bold, italic, advanced Figma features
-| Auto layout |  Row/Column |    |
-| Vectors | VectorPainter  |  Creates a vector painter looking at a drawable with the svg export name on nodes with svg exports   | Automation for importing svgs from figma
-| Rectangle | Box  |  Includes generic "style mods" (bg, shadow, )  |
-| Shadow fill |  Elevation  |  Does not work well for non-rectangles or where shadow is applied to parent of many children | Other shapes, find solution for shadows on parents
-| Corner Radius |  .clip(CornerRadiusShape) | |
-| Gradient fill |   | |
-|  |   | |
-|  |   | |
-
+|    feature    | Jetpack Compose feature               | Note                                                                                              | Missing / to-do                                    |   |
+|:-------------:|---------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------|---|
+|               |                                       |                                                                                                   |                                                    |   |
+| Frame         | Constraint Layout                     | Supports start, end, scale, stretch, start-end (maintain margins dp), center                      | auto remove redundant constraints                  |   |
+| Nested nodes  | Composables with nested calls to them | This is a nice solution for updating implementation to design                                     |                                                    |   |
+| Group         | Box                                   |                                                                                                   |                                                    |   |
+| Text          | Text                                  | Supports solid colours, font size vertical and horizontal text align                              | Font family, bold, italic, advanced Figma features |   |
+| Auto layout   | Row/Column                            |                                                                                                   |                                                    |   |
+| Vectors       | VectorPainter                         | Creates a vector painter looking at a drawable with the svg export name on nodes with svg exports | Automation for importing svgs from figma           |   |
+| Rectangle     | Box                                   | Includes generic "style mods" (bg, shadow, )                                                      |                                                    |   |
+| Shadow fill   | Elevation                             | Does not work well for non-rectangles or where shadow is applied to parent of many children       | Other shapes, find solution for shadows on parents |   |
+| Corner Radius | .clip(CornerRadiusShape)              |                                                                                                   |                                                    |   |
+| Gradient fill |                                       |                                                                                                   |                                                    |   |
 
 # Usage:
 With the [plugin](todo:) installed, clone this repo, cd into it and run:
@@ -37,7 +34,7 @@ With the [plugin](todo:) installed, clone this repo, cd into it and run:
 Now you can open the plugin window in Figma, select a node, and click "Genarate" to get the Jetpack Compose code to display it!
 # Development
 
-The backend server accepts Figma's json on a post to `/` on port 9020.
+The backend server accepts Figma's json on a post to `/` on port 9020. Port configurable from application.conf
 
 ## Figma plugin development
 ###### For Linux
