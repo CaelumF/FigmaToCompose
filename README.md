@@ -4,6 +4,16 @@ Easily convert [Figma](https://www.figma.com/) designs directly to [Jetpack Comp
 This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
 to Jetpack Compose and sets the clipboard to it
 
+
+# Usage:
+With the [plugin](todo:) installed, start the server by cloning this repo, cd-ing into it and running:
+
+`./gradlew run --args="-config=application.conf"`
+
+This requires a JDK installed, if you're doing Android dev it probably already is :) 
+
+Now you can open the plugin window in Figma, select a node, and click "Genarate" to get the Jetpack Compose code to display it!
+
 # Use cases
 Often times designs contain non-repeated distances, colours and proportions. Replicating these designs can be very tedious, and discrepancies in design and implementation can lead to "split realities".
 
@@ -24,12 +34,6 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 | Corner Radius | .clip(CornerRadiusShape)              |                                                                                                   |                                                    |   |
 | Gradient fill | Paint(LinearGradient)                 |  Only currently supports horizontal gradients                                                     |                                                    |   |
 
-# Usage:
-With the [plugin](todo:) installed, clone this repo, cd into it and run:
-
-`./gradlew run --args="-config=application.conf"`
-
-Now you can open the plugin window in Figma, select a node, and click "Genarate" to get the Jetpack Compose code to display it!
 # Development
 
 The backend server accepts Figma's json on a post to `/` on port 9020. Port configurable from application.conf

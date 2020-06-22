@@ -53,6 +53,7 @@ class ConvertRequest() {
 }
 
 fun Application.main() {
+    println("Starting figma to compose server...")
     install(DefaultHeaders)
     install(CORS) {
       anyHost()
@@ -115,6 +116,7 @@ fun Application.main() {
             }
         }
     }
+    println("Started server! You can use the plugin to genarate compose code now!")
 }
 
 
