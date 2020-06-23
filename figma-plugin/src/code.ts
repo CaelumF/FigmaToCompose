@@ -69,4 +69,7 @@ figma.ui.onmessage = msg => {
         figma.ui.postMessage({type: "post", data: JSON.stringify(allProps)})
         console.log("allProps:", allProps);
     }
+    if(msg.type === "close") {
+        figma.closePlugin()
+    }
 };
