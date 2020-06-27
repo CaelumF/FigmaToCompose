@@ -67,12 +67,12 @@ fun Application.main() {
             val nodeJsonToConvert = call.receive<String>();
             try {
                 val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
-                if(convertRequest.test == true) call.respond(HttpStatusCode.Accepted, "")
-                //          Re-set state. TODO: Remove the need to do this
-                composables = hashMapOf()
-
+                if(convertRequest.test == true) {
+                    call.respond(HttpStatusCode.Accepted, "")
+                    return@post;
+                }
                 if(convertRequest.resetDecollisionMap == true)  {
-                    decollisionMap = HashMap<String, String>()
+                    decollisionMap = hashMapOf()
                     composables = hashMapOf()
                 }
 
@@ -133,7 +133,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 //If an original doesn't match its associated modified, it is a collision and we can add a number, and check again
 //This requires more lookups than it could, which can be fixed if it ever matters.
 private var decollisionMap = HashMap<String, String>()
-private fun String.toKotlinIdentifier(): String {
+fun String.toKotlinIdentifier(): String {
     val original = this
     val changed = this.replace(Regex("[\\s-/,.]"), "_")
     var matches = decollisionMap.getOrPut(changed) { original } == original

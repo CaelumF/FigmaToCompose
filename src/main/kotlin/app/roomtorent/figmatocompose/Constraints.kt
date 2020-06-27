@@ -6,11 +6,11 @@ import DefaultFrameMixin
 import LayoutMixin
 
 fun horizontalConstraints(
-    index: Int,
-    child: Pair<String, BaseNodeMixin>,
-    childLayout: LayoutMixin,
-    node: DefaultFrameMixin,
-    childNode: BaseNodeMixin
+        index: Int,
+        child: Pair<String, BaseNodeMixin>,
+        childLayout: LayoutMixin,
+        node: DefaultFrameMixin,
+        childNode: BaseNodeMixin
 ): String {
     return """
         ${when ((child.second as ConstraintMixin).constraints?.horizontal) {
@@ -56,11 +56,11 @@ fun horizontalConstraints(
 }
 
 fun verticalConstraints(
-    index: Int,
-    child: Pair<String, BaseNodeMixin>,
-    childLayout: LayoutMixin,
-    node: DefaultFrameMixin,
-    childNode: BaseNodeMixin
+        index: Int,
+        child: Pair<String, BaseNodeMixin>,
+        childLayout: LayoutMixin,
+        node: DefaultFrameMixin,
+        childNode: BaseNodeMixin
 ): String {
     return """
         ${when ((child.second as ConstraintMixin).constraints?.vertical) {
@@ -98,7 +98,7 @@ fun verticalConstraints(
                         top constrainTo parent.top
                         bottom constrainTo parent.bottom
                         verticalBias = ${childNode.localY(node)
-            .toDouble() / (node.height - childLayout.height)}f
+                .toDouble() / (node.height - childLayout.height)}f
                         
                     """.trimIndent()
         else -> throw Exception("nonexistant or unknown constraint type")
@@ -112,55 +112,58 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
         if (children != null) {
             //TODO: Refactor with knowledge that all ConstraintMixins are also LayoutMixins
             val childrenTagPairs = children!!
-                .filter { it is ConstraintMixin }
-                .map { Pair(it.name ?: it.id ?: throw Exception("No id!"), it) }
+                    .filter { it is ConstraintMixin }
+                    .map { Pair(it.name ?: it.id ?: throw Exception("No id!"), it) }
 
 
             "ConstraintLayout".args(
-                "modifier = ${Mods(extraModifiers) { addStyleMods(node) }}",
-                "constraintSet = ${"ConstraintSet".body(
-                    """
+                    "modifier = ${Mods(extraModifiers) { addStyleMods(node) }}",
+                    "constraintSet = ${"ConstraintSet".body(
+                            when {
+//                                Special scenarios where more short constraints are possible
+                                else -> """
                     ${childrenTagPairs.mapIndexed() { index: Int,
-                                                      pair: Pair<String, BaseNodeMixin> ->
-                        "val child${index} = tag(\"${index}_${pair.first}\") "
-                    }.joinToString("\n")}
+                                                      nameNodePair: Pair<String, BaseNodeMixin> ->
+                                    "val ${nameNodePair.first.toKotlinIdentifier()}_${index} = tag(\"${index}_${nameNodePair.first}\") "
+                                }.joinToString("\n")}
                         
-                    ${childrenTagPairs.mapIndexed { index: Int, child: Pair<String, BaseNodeMixin> -> // Constraints
-                        val childNode = child.second as BaseNodeMixin
-                        val childLayout = child.second as LayoutMixin
-                        """
-                           ${"child${index}.apply".body(
-                            """
+                    ${childrenTagPairs.mapIndexed { index: Int, nameNodePair: Pair<String, BaseNodeMixin> -> // Constraints
+                                    val childNode = nameNodePair.second as BaseNodeMixin
+                                    val childLayout = nameNodePair.second as LayoutMixin
+                                    """
+                           ${"${nameNodePair.first.toKotlinIdentifier()}_${index}.apply".body(
+                                            """
                             ${horizontalConstraints(
-                                index,
-                                child,
-                                childLayout,
-                                node,
-                                childNode
-                            )}
+                                                    index,
+                                                    nameNodePair,
+                                                    childLayout,
+                                                    node,
+                                                    childNode
+                                            )}
                             ${verticalConstraints(
-                                index,
-                                child,
-                                childLayout,
-                                node,
-                                childNode
-                            )}
+                                                    index,
+                                                    nameNodePair,
+                                                    childLayout,
+                                                    node,
+                                                    childNode
+                                            )}
                             
                            """.trimIndent()
-                        )} 
+                                    )} 
                         """.trimIndent()
 
-                    }.joinToString("\n")}
+                                }.joinToString("\n")}
                 """.trimIndent()
-                )}"
+                            }
+                    )}"
             ).body(
-                """
+                    """
                // Constraint layout body
                     ${children?.mapIndexed { index, child ->
-                    makeCompose(child) {
-                        tag("${index}_${child.name}")
-                    }
-                }?.joinToString("\n")}
+                        makeCompose(child) {
+                            tag("${index}_${child.name}")
+                        }
+                    }?.joinToString("\n")}
                 """.trimIndent()
             )
         } else "Box(){}"
