@@ -7,13 +7,13 @@ import LayoutMixin
 
 fun horizontalConstraints(
         index: Int,
-        child: Pair<String, BaseNodeMixin>,
+        childConstraints: Pair<String, BaseNodeMixin>,
         childLayout: LayoutMixin,
         node: DefaultFrameMixin,
         childNode: BaseNodeMixin
 ): String {
     return """
-        ${when ((child.second as ConstraintMixin).constraints?.horizontal) {
+        ${when ((childConstraints.second as ConstraintMixin).constraints?.horizontal) {
         //Left constrained to left not necessary as this is default
         "MIN",
         "LEFT" -> """
@@ -57,13 +57,13 @@ fun horizontalConstraints(
 
 fun verticalConstraints(
         index: Int,
-        child: Pair<String, BaseNodeMixin>,
+        childConstraints: Pair<String, BaseNodeMixin>,
         childLayout: LayoutMixin,
         node: DefaultFrameMixin,
         childNode: BaseNodeMixin
 ): String {
     return """
-        ${when ((child.second as ConstraintMixin).constraints?.vertical) {
+        ${when ((childConstraints.second as ConstraintMixin).constraints?.vertical) {
         //Left constrained to left not necessary as this is default
         "MIN",
         "TOP" -> """
@@ -161,7 +161,7 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
                // Constraint layout body
                     ${children?.mapIndexed { index, child ->
                         makeCompose(child) {
-                            tag("${index}_${child.name}")
+                            tag("${child.name?.toKotlinIdentifier()}_${index}")
                         }
                     }?.joinToString("\n")}
                 """.trimIndent()
