@@ -71,7 +71,10 @@ fun Application.main() {
                 //          Re-set state. TODO: Remove the need to do this
                 composables = hashMapOf()
 
-                if(convertRequest.resetDecollisionMap == true) decollisionMap = HashMap<String, String>()
+                if(convertRequest.resetDecollisionMap == true)  {
+                    decollisionMap = HashMap<String, String>()
+                    composables = hashMapOf()
+                }
 
                 val mainComposableContent = makeCompose(convertRequest.rootiestNode ?: throw Exception("Incomplete request")) {
                         fillMaxSize()
