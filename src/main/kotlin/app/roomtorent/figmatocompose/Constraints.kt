@@ -161,7 +161,7 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
                // Constraint layout body
                     ${children?.mapIndexed { index, child ->
                         makeCompose(child) {
-                            tag("${child.name?.toKotlinIdentifier()}_${index}")
+                            tag("${index}_${child.name}")
                         }
                     }?.joinToString("\n")}
                 """.trimIndent()
