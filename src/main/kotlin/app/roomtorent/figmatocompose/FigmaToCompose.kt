@@ -1,7 +1,6 @@
 package app.roomtorent.figmatocompose
 
 import BaseNodeMixin
-import BlendMixin
 import ComponentNode
 import DefaultFrameMixin
 import ExportSettingsSVG
@@ -10,11 +9,9 @@ import GroupNodeImpl
 import InstanceNode
 import LayoutMixin
 import RectangleNode
-import ShadowEffect
 import SolidPaint
 import TextNode
 import com.beust.klaxon.Klaxon
-import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -31,7 +28,6 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.*
 import java.util.HashMap
-import kotlin.properties.Delegates
 
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
@@ -167,7 +163,7 @@ fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifie
                 extraModifiers
         )
 
-        else -> frameToComposeConstraintsLayout2(
+        else -> frameToComposeConstraintsLayout(
                 node,
                 extraModifiers
         )
@@ -181,14 +177,10 @@ fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifie
  */
 fun vectorFrameToCompose(node: DefaultFrameMixin): String {
     val exportSettings = node.exportSettings!!.any { it is ExportSettingsSVG }
-    return """
-    ${"Box"
-            .args(Mods {
-                preferredSize(node.width, node.height)
-                paintVectorPaint("R.drawable.${node.name?.toLowerCase()}" ?: throw Exception(""))
-                addStyleMods(node)
-            })}
-    """.trimIndent()
+    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toLowerCase()}")}", "modifier = ${Mods {
+        preferredSize(node.width, node.height)
+        addStyleMods(node)
+    }}")
 }
 
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {

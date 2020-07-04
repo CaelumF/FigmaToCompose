@@ -16,8 +16,8 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     val inheritedModifiers: ArrayList<ChainableModifier>
 
     fun getBuiltOptimized(): String {
-        if (ownModifiers.isEmpty() && inheritedModifiers.isEmpty()) return ""
         var combined = ownModifiers.apply { if (this.isNotEmpty() && inheritedModifiers.isNotEmpty()) add(CustomModSeparator()) } + inheritedModifiers
+        if(combined.filterNot { it is CustomModSeparator || it is None }.isEmpty()) return "Modifier"
         if (Settings.Optimizations.omitExtraShadows) {
             val biggestShadow: DrawShadow? = combined
                     .filterIsInstance<DrawShadow>()
@@ -98,7 +98,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     class CustomModSeparator() : ChainableModifier() {
         override fun addToChain(acc: String): String {
 //            return if(acc == "Modifier") "+ Modifier"
-            return "$acc + Modifier"
+            return acc
         }
     }
 
@@ -162,7 +162,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     }
 
     class None() : ChainableModifier() {
-        override fun addToChain(acc: String) = "$acc.none()"
+        override fun addToChain(acc: String) = acc
     }
 
     class ConstrainAs(val tagName: String, val composeConstraintCode: String) : ChainableModifier() {

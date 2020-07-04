@@ -10,7 +10,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             if (node.counterAxisSizingMode == "FIXED") preferredWidth(
                 node.width
             )
-        }}, verticalArrangement = ${"spacingArrangement".args("${node.itemSpacing}.dp.toIntPx()")}) {
+        }}, verticalArrangement = ${"spacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
             ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {

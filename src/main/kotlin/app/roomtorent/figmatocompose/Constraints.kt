@@ -96,12 +96,12 @@ private fun getComposeConstraintAndSize(
 //          Most X or Y / Bottom or Right
         Constraint.MAX -> {
             composeDimensionSize = "Dimension.preferredValue".args(childSizeInDimension.roundedDp())
-            composeConstraint = "${maxName}.linkTo(parent.${maxName})"
+            composeConstraint = "${maxName}.linkTo".args("parent.${maxName}", (parentSizeInDimension - (childSizeInDimension + childPositionOnDimension)).roundedDp())
         }
 //          Least X or Y / Top or Left
         Constraint.MIN -> {
             composeDimensionSize = "Dimension.preferredValue".args(childSizeInDimension.roundedDp())
-            composeConstraint = "${minName}.linkTo(parent.${minName})"
+            composeConstraint = "${minName}.linkTo".args("parent.${minName}", childPositionOnDimension.roundedDp())
         }
 //          Fixed percentages all around
         Constraint.SCALE -> {
@@ -114,7 +114,7 @@ private fun getComposeConstraintAndSize(
         Constraint.STRETCH -> {
             composeConstraint = """
               ${"${minName}.linkTo".args("parent.${minName}", childPositionOnDimension.roundedDp())}
-              ${"${maxName}.linkTo".args("parent.${maxName}", (childPositionOnDimension / (parentSizeInDimension - childSizeInDimension)).roundedDp())}
+              ${"${maxName}.linkTo".args("parent.${maxName}", (parentSizeInDimension - (childSizeInDimension + childPositionOnDimension)).roundedDp())}
           """.trimIndent()
             composeDimensionSize = "Dimension.percent".args("${(childSizeInDimension / parentSizeInDimension).roundedForHuman()}f")
         }
@@ -128,7 +128,7 @@ private fun getComposeConstraintAndSize(
 }
 
 
-fun frameToComposeConstraintsLayout2(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
     //Create references
     val constraintReferences = arrayListOf<String>()
 
@@ -145,7 +145,7 @@ fun frameToComposeConstraintsLayout2(node: DefaultFrameMixin, extraModifiers: (M
     } ?: listOf()
     val createComposeReferencesCode = ""
     return """
-            ConstraintLayout {
+            ConstraintLayout(${Mods(extraModifiers) { addStyleMods(node) }}) {
                 val (${constraintReferences.joinToString(separator = ", ")}) = createRefs()
                 $createComposeReferencesCode
                 
