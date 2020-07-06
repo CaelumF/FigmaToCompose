@@ -11,6 +11,7 @@ import LayoutMixin
 import RectangleNode
 import SolidPaint
 import TextNode
+import VectorNode
 import com.beust.klaxon.Klaxon
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -171,13 +172,13 @@ fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifie
 }
 
 /**
- * Creates a box with a modifier referencing the vector asset specified in the export settings for this frame. A resource with this id will be needed
+ * Creates an image with a vector resource with its name as the name of the node
  * Note that android resources are all lower case, so for convenience this will convert the name to lowercase which could cause duplicates
  * TODO: Make it easier to import import assets to android project. Plugins already exist for this though
  */
-fun vectorFrameToCompose(node: DefaultFrameMixin): String {
+fun vectorFrameToCompose(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
     val exportSettings = node.exportSettings!!.any { it is ExportSettingsSVG }
-    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toLowerCase()}")}", "modifier = ${Mods {
+    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toLowerCase()}")}", "modifier = ${Mods(extraModifiers = extraModifiers) {
         preferredSize(node.width, node.height)
         addStyleMods(node)
     }}")
@@ -191,7 +192,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
             "Box()".body(node.children?.joinToString(separator = "\n") { makeCompose(it) } ?: "")
         }
         is DefaultFrameMixin -> when {
-            node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node)
+            node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node, extraModifiers)
 
             node is ComponentNode -> with(node) {
                 val identifier = defineComponentFromFrameMixin(node)
@@ -205,6 +206,10 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                 "$identifier(${Mods(extraModifiers, mods = {})})"
             }
             else -> frameOrAutoLayoutToCompose(node, extraModifiers)
+        }
+        is VectorNode -> {
+            println("Not adding raw vector ${node.name}")
+            "/* raw vector ${node.name} should have an export setting */"
         }
         is RectangleNode -> with(node) {
             """

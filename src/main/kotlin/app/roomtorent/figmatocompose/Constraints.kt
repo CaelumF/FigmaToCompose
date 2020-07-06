@@ -95,12 +95,12 @@ private fun getComposeConstraintAndSize(
     when (constraint) {
 //          Most X or Y / Bottom or Right
         Constraint.MAX -> {
-            composeDimensionSize = "Dimension.preferredValue".args(childSizeInDimension.roundedDp())
+            composeDimensionSize = "Dimension.value".args(childSizeInDimension.roundedDp())
             composeConstraint = "${maxName}.linkTo".args("parent.${maxName}", (parentSizeInDimension - (childSizeInDimension + childPositionOnDimension)).roundedDp())
         }
 //          Least X or Y / Top or Left
         Constraint.MIN -> {
-            composeDimensionSize = "Dimension.preferredValue".args(childSizeInDimension.roundedDp())
+            composeDimensionSize = "Dimension.value".args(childSizeInDimension.roundedDp())
             composeConstraint = "${minName}.linkTo".args("parent.${minName}", childPositionOnDimension.roundedDp())
         }
 //          Fixed percentages all around
