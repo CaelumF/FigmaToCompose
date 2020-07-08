@@ -92,7 +92,6 @@ fun Application.main() {
                         }
                         
                         @Composable()
-                        @Preview()
                         fun $identifier() {
                             $mainComposableContent
                         }
@@ -134,7 +133,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 private var decollisionMap = HashMap<String, String>()
 fun String.toKotlinIdentifier(): String {
     val original = this
-    val changed = this.replace(Regex("[\\s-/,.]"), "_")
+    val changed = this.replace(Regex("[\\s-/,.()?+\\[\\]:!\"\'{}`<>]"), "_")
     var matches = decollisionMap.getOrPut(changed) { original } == original
     var attempts = 0
     while (!matches) {
@@ -164,7 +163,7 @@ fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifie
                 extraModifiers
         )
 
-        else -> frameToComposeConstraintsLayout(
+        else -> childrenMixinToConstraintsLayout(
                 node,
                 extraModifiers
         )
@@ -243,7 +242,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                                     "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
                                         this.color.toComposeColor(node.opacity.toFloat())
                                     }
-                                    else -> "Color.BLACK"
+                                    else -> "Color.Black"
                                 },
                                 //TODO: RTL text support
                                 "textAlign = " + when (this.textAlignHorizontal) {

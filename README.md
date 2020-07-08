@@ -16,7 +16,23 @@ With the [plugin](todo:) installed, start the server by cloning this repo, cd-in
 The outputted code makes usage of some utility functions, so you'll need this pasted into a file in your project:
 (this next code snippet is CC0 / all of my rights waived)
 ```kotlin
-fun spacingArrangement(spacingPx: Int): Arrangement.Vertical = object : Arrangement.Vertical {
+fun vSpacingArrangement(spacingPx: Int): Arrangement.Vertical = object : Arrangement.Vertical {
+
+    override fun arrange(
+        totalSize: Int,
+        size: List<Int>,
+        layoutDirection: LayoutDirection
+    ): List<Int> {
+        val positions = mutableListOf<Int>()
+        var current = 0
+        size.forEach {
+            positions.add(current)
+            current += it + spacingPx
+        }
+        return positions
+    }
+}
+fun hSpacingArrangement(spacingPx: Int): Arrangement.Horizontal = object : Arrangement.Horizontal {
 
     override fun arrange(
         totalSize: Int,
@@ -54,7 +70,7 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 |:-------------:|---------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------|---|
 | Frame         | Constraint Layout                     | Supports start, end, scale, stretch, start-end (maintain margins dp), center                      | auto remove redundant constraints                  |   |
 | Nested nodes  | Composables with nested calls to them | This is a nice solution for updating implementation to design                                     |                                                    |   |
-| Group         | Box                                   |                                                                                                   |                                                    |   |
+| Group         | Box                                   | !Recommend using the dropdown to convert to a Frame and restart plugin as workaround for figma bug| Pass parent group's constraints to group's children|   |
 | Text          | Text                                  | Supports solid colours, font size vertical and horizontal text align                              | Font family, bold, italic, advanced Figma features |   |
 | Auto layout   | Row/Column                            |                                                                                                   |                                                    |   |
 | Vectors       | Image(vectorResource(...))            | Creates a vector painter looking at a drawable with the svg export name on nodes with svg exports | Automation for importing svgs from figma           |   |
@@ -76,6 +92,13 @@ The backend server accepts Figma's json on a post to `/` on port 9020. Port conf
 ###### Mac or Windows
 Within the FigmaPlugin directory lies the code to a plugin that can be imported on Windows or Mac. In Figma client app (not web), go to
 Plugins -> Development > New Plugin and select the manifest.json
+
+
+# Troubleshooting
+
+## ArrayIndexOutOfBounds error in rendering
+Check that there are no recursive composables, and make that no Figma components
+have the same name.
 
 # TODO:
 See Issues

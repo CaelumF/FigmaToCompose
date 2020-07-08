@@ -29,9 +29,11 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
                 combined = withOnlyBiggestShadow
             }
         }
+        //Make sure that given equal order, clips come first
         val (clips, notClips) = combined.partition { it is CornerRadius || it is RectangleCornerRadius }
         val clipsFirst = clips + notClips
-        return clipsFirst.fold("Modifier") { acc, chainableModifier: ChainableModifier ->
+        val clipsFirstSorted = clipsFirst.sortedBy { it.order }
+        return clipsFirstSorted.fold("Modifier") { acc, chainableModifier: ChainableModifier ->
             chainableModifier.addToChain(
                     acc
             )
@@ -55,6 +57,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     }
 
     abstract class ChainableModifier {
+        open var order: Int = 0
         abstract fun addToChain(acc: String): String
     }
 
@@ -218,6 +221,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
      * For setting the modifier of the first composable inside one of our own composables to the modifier passed as a parameter called "modifier"
      */
     class ClassProperties() : ChainableModifier() {
+        override var order: Int = -100000
         override fun addToChain(acc: String): String = "modifier"
     }
 

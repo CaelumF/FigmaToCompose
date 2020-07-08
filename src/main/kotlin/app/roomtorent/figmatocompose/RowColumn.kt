@@ -10,7 +10,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             if (node.counterAxisSizingMode == "FIXED") preferredWidth(
                 node.width
             )
-        }}, verticalArrangement = ${"spacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
+        }}, verticalArrangement = ${"vSpacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
             ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {
@@ -34,7 +34,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
                 node.height
             )
             addStyleMods(node)
-        }}, horizontalArrangement = ${"spacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
+        }}, horizontalArrangement = ${"hSpacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
                     ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {

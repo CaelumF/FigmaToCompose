@@ -1,5 +1,7 @@
 package app.roomtorent.figmatocompose
 
+import BaseNodeMixin
+import ChildrenMixin
 import ConstraintMixin
 import Constraints
 import DefaultFrameMixin
@@ -120,15 +122,16 @@ private fun getComposeConstraintAndSize(
         }
 //          Unspecified with - position in center
         Constraint.CENTER -> {
-            composeDimensionSize = "Dimension.fillToConstraints"
+            composeDimensionSize = "Dimension.value".args(childSizeInDimension.roundedDp())
             composeConstraint = "center${dimensionName}lyTo(parent)"
         }
     }
     return Pair(composeConstraint, composeDimensionSize)
 }
 
-
-fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+//TODO: Flatten for group nodes since they have no impact
+fun childrenMixinToConstraintsLayout(node: ConstraintMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+    if(node !is LayoutMixin || node !is BaseNodeMixin || node !is ChildrenMixin) throw Exception("Can't create constraint layout without dimensions of the frame")
     //Create references
     val constraintReferences = arrayListOf<String>()
 
@@ -144,6 +147,8 @@ fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Mo
         }
     } ?: listOf()
     val createComposeReferencesCode = ""
+
+    if(constraintChildren.isEmpty()) return "Box(${Mods(extraModifiers) { addStyleMods(node) }})"
     return """
             ConstraintLayout(${Mods(extraModifiers) { addStyleMods(node) }}) {
                 val (${constraintReferences.joinToString(separator = ", ")}) = createRefs()
