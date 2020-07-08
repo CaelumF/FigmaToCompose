@@ -4,13 +4,58 @@ Easily convert [Figma](https://www.figma.com/) designs directly to [Jetpack Comp
 This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
 to Jetpack Compose and sets the clipboard to it
 
+Jetpack Compose: Dev14
+Figma release: June 25th 2020
 
 # Usage:
 With the [plugin](todo:) installed, start the server by cloning this repo, cd-ing into it and running:
 
 `./gradlew run --args="-config=application.conf"`
 
-This requires a JDK installed, if you're doing Android dev it probably already is :) 
+
+The outputted code makes usage of some utility functions, so you'll need this pasted into a file in your project:
+(this next code snippet is CC0 / all of my rights waived)
+```kotlin
+fun vSpacingArrangement(spacingPx: Int): Arrangement.Vertical = object : Arrangement.Vertical {
+
+    override fun arrange(
+        totalSize: Int,
+        size: List<Int>,
+        layoutDirection: LayoutDirection
+    ): List<Int> {
+        val positions = mutableListOf<Int>()
+        var current = 0
+        size.forEach {
+            positions.add(current)
+            current += it + spacingPx
+        }
+        return positions
+    }
+}
+fun hSpacingArrangement(spacingPx: Int): Arrangement.Horizontal = object : Arrangement.Horizontal {
+
+    override fun arrange(
+        totalSize: Int,
+        size: List<Int>,
+        layoutDirection: LayoutDirection
+    ): List<Int> {
+        val positions = mutableListOf<Int>()
+        var current = 0
+        size.forEach {
+            positions.add(current)
+            current += it + spacingPx
+        }
+        return positions
+    }
+}
+
+@Composable
+fun Dp.toIntInPx(): Int = with(DensityAmbient.current) {
+    return@toIntInPx this@toIntInPx.toIntPx()
+}
+```
+
+This requires a JDK installed, if you're doing Android dev it probably already is :)
 
 Now you can open the plugin window in Figma, select a node, and click "Genarate" to get the Jetpack Compose code to display it!
 
@@ -25,14 +70,14 @@ Primarily, this is to cut out taking measurements, reduce design-implementation 
 |:-------------:|---------------------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------|---|
 | Frame         | Constraint Layout                     | Supports start, end, scale, stretch, start-end (maintain margins dp), center                      | auto remove redundant constraints                  |   |
 | Nested nodes  | Composables with nested calls to them | This is a nice solution for updating implementation to design                                     |                                                    |   |
-| Group         | Box                                   |                                                                                                   |                                                    |   |
+| Group         | Box                                   | !Recommend using the dropdown to convert to a Frame and restart plugin as workaround for figma bug| Pass parent group's constraints to group's children|   |
 | Text          | Text                                  | Supports solid colours, font size vertical and horizontal text align                              | Font family, bold, italic, advanced Figma features |   |
 | Auto layout   | Row/Column                            |                                                                                                   |                                                    |   |
-| Vectors       | VectorPainter                         | Creates a vector painter looking at a drawable with the svg export name on nodes with svg exports | Automation for importing svgs from figma           |   |
+| Vectors       | Image(vectorResource(...))            | Creates a vector painter looking at a drawable with the svg export name on nodes with svg exports | Automation for importing svgs from figma           |   |
 | Rectangle     | Box                                   | Includes generic "style mods" (bg, shadow, )                                                      |                                                    |   |
-| Shadow fill   | Elevation                             | Does not work well for non-rectangles or where shadow is applied to parent of many children       | Other shapes, find solution for shadows on parents |   |
+| Shadow fill   | drawShadow                            | Does not work well for non-rectangles or where shadow is applied to parent of many children       | Other shapes, find solution for shadows on parents |   |
 | Corner Radius | .clip(CornerRadiusShape)              |                                                                                                   |                                                    |   |
-| Gradient fill | Paint(LinearGradient)                 |  Only currently supports horizontal gradients                                                     |                                                    |   |
+| Gradient fill | drawBackground(HorizontalGradient(...)|  Only currently supports horizontal gradients                                                     |                                                    |   |
 
 # Development
 
@@ -47,6 +92,13 @@ The backend server accepts Figma's json on a post to `/` on port 9020. Port conf
 ###### Mac or Windows
 Within the FigmaPlugin directory lies the code to a plugin that can be imported on Windows or Mac. In Figma client app (not web), go to
 Plugins -> Development > New Plugin and select the manifest.json
+
+
+# Troubleshooting
+
+## ArrayIndexOutOfBounds error in rendering
+Check that there are no recursive composables, and make that no Figma components
+have the same name.
 
 # TODO:
 See Issues

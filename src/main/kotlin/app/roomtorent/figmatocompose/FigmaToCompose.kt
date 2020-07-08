@@ -1,7 +1,6 @@
 package app.roomtorent.figmatocompose
 
 import BaseNodeMixin
-import BlendMixin
 import ComponentNode
 import DefaultFrameMixin
 import ExportSettingsSVG
@@ -10,11 +9,10 @@ import GroupNodeImpl
 import InstanceNode
 import LayoutMixin
 import RectangleNode
-import ShadowEffect
 import SolidPaint
 import TextNode
+import VectorNode
 import com.beust.klaxon.Klaxon
-import com.github.kittinunf.fuel.httpGet
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -31,15 +29,15 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.io.*
 import java.util.HashMap
-import kotlin.properties.Delegates
 
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
-class Settings private constructor(){
+class Settings private constructor() {
     companion object
     class Optimizations private constructor() {
         companion object {
             val omitExtraShadows: Boolean = true
+            val dpDecimalPlaces = 2
         }
     }
 }
@@ -56,7 +54,7 @@ fun Application.main() {
     println("Starting figma to compose server...")
     install(DefaultHeaders)
     install(CORS) {
-      anyHost()
+        anyHost()
     }
     install(CallLogging)
     val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
@@ -67,18 +65,19 @@ fun Application.main() {
             val nodeJsonToConvert = call.receive<String>();
             try {
                 val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
-                if(convertRequest.test == true) {
+                if (convertRequest.test == true) {
                     call.respond(HttpStatusCode.Accepted, "")
                     return@post;
                 }
-                if(convertRequest.resetDecollisionMap == true)  {
+                if (convertRequest.resetDecollisionMap == true) {
                     decollisionMap = hashMapOf()
                     composables = hashMapOf()
                 }
 
-                val mainComposableContent = makeCompose(convertRequest.rootiestNode ?: throw Exception("Incomplete request")) {
-                        fillMaxSize()
-                } .removeNoAffectPatterns()
+                val mainComposableContent = makeCompose(convertRequest.rootiestNode
+                        ?: throw Exception("Incomplete request")) {
+                    fillMaxSize()
+                }.removeNoAffectPatterns()
 
                 val identifier = (convertRequest.rootiestNode?.name ?: "unnamed").toKotlinIdentifier()
 
@@ -93,7 +92,6 @@ fun Application.main() {
                         }
                         
                         @Composable()
-                        @Preview()
                         fun $identifier() {
                             $mainComposableContent
                         }
@@ -104,10 +102,10 @@ fun Application.main() {
         
                     $upperMostComposable
                 """.trimIndent()
-                    .removeNoAffectPatterns()
+                        .removeNoAffectPatterns()
 
                 call.respond(output)
-                if(convertRequest.copyToClipboard == true) {
+                if (convertRequest.copyToClipboard == true) {
                     println("Processed one, setting clipboard to output :) ")
                     val selection = StringSelection(output)
                     clipboard.setContents(selection, selection)
@@ -135,7 +133,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 private var decollisionMap = HashMap<String, String>()
 fun String.toKotlinIdentifier(): String {
     val original = this
-    val changed = this.replace(Regex("[\\s-/,.]"), "_")
+    val changed = this.replace(Regex("[\\s-/,.()?+\\[\\]:!\"\'{}`<>]"), "_")
     var matches = decollisionMap.getOrPut(changed) { original } == original
     var attempts = 0
     while (!matches) {
@@ -153,7 +151,7 @@ fun defineComponentFromFrameMixin(node: DefaultFrameMixin): String {
         fun $identifier(modifier: Modifier = Modifier) {
             ${frameOrAutoLayoutToCompose(node) { addPassedProperties() }}
         }"""
-        .trimIndent()
+            .trimIndent()
 
     return identifier
 }
@@ -161,32 +159,28 @@ fun defineComponentFromFrameMixin(node: DefaultFrameMixin): String {
 fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
     return when {
         node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToComposeRowColumn(
-            node,
-            extraModifiers
+                node,
+                extraModifiers
         )
 
-        else -> frameToComposeConstraintsLayout(
-            node,
-            extraModifiers
+        else -> childrenMixinToConstraintsLayout(
+                node,
+                extraModifiers
         )
     }
 }
 
 /**
- * Creates a box with a modifier referencing the vector asset specified in the export settings for this frame. A resource with this id will be needed
+ * Creates an image with a vector resource with its name as the name of the node
  * Note that android resources are all lower case, so for convenience this will convert the name to lowercase which could cause duplicates
  * TODO: Make it easier to import import assets to android project. Plugins already exist for this though
  */
-fun vectorFrameToCompose(node: DefaultFrameMixin): String {
+fun vectorFrameToCompose(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
     val exportSettings = node.exportSettings!!.any { it is ExportSettingsSVG }
-    return """
-    ${"Box"
-        .args(Mods {
-            preferredSize(node.width, node.height)
-            paintVectorPaint("R.drawable.${node.name?.toLowerCase()}" ?: throw Exception(""))
-            addStyleMods(node)
-        })}
-    """.trimIndent()
+    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toLowerCase()}")}", "modifier = ${Mods(extraModifiers = extraModifiers) {
+        preferredSize(node.width, node.height)
+        addStyleMods(node)
+    }}")
 }
 
 fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
@@ -197,7 +191,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
             "Box()".body(node.children?.joinToString(separator = "\n") { makeCompose(it) } ?: "")
         }
         is DefaultFrameMixin -> when {
-            node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node)
+            node.exportSettings?.any { it is ExportSettingsSVG } == true -> vectorFrameToCompose(node, extraModifiers)
 
             node is ComponentNode -> with(node) {
                 val identifier = defineComponentFromFrameMixin(node)
@@ -212,12 +206,16 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
             }
             else -> frameOrAutoLayoutToCompose(node, extraModifiers)
         }
+        is VectorNode -> {
+            println("Not adding raw vector ${node.name}")
+            "/* raw vector ${node.name} should have an export setting */"
+        }
         is RectangleNode -> with(node) {
             """
                Box(${Mods(extraModifiers) {
                 preferredSize(
-                    width,
-                    height
+                        width,
+                        height
                 )
                 addStyleMods(node)
             }}){} 
@@ -226,35 +224,38 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
         }
         is TextNode -> with(node) {
             """
-                ${node.characters?.let { text -> 
-                "Text".args("\"$text\"", Mods(extraModifiers) {
-                    wrapContentHeight(when(node.textAlignVertical) { 
+                ${node.characters?.let { text ->
+                "Text".args("\"$text\"".replace(
+                        "\n",
+                        "\\n"
+                ), Mods(extraModifiers) {
+                    wrapContentHeight(when (node.textAlignVertical) {
                         "TOP" -> Modifier.Alignment.Top
                         "CENTER" -> Modifier.Alignment.CenterVertically
                         "BOTTOM" -> Modifier.Alignment.Bottom
-                        
+
                         else -> throw Exception("Alignment ${node.textAlignVertical} must be new")
                     })
                 },
-                    "style = currentTextStyle().copy".args(
-                        "color = " + when (this.fills?.get(0)?.type) {
-                            "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
-                                this.color.toComposeColor(node.opacity.toFloat())
-                            }
-                            else -> "Color.BLACK"
-                        },
-                        //TODO: RTL text support
-                        "textAlign = " + when (this.textAlignHorizontal) {
-                            "LEFT" -> "TextAlign.Left"
-                            "RIGHT" -> "TextAlign.Right"
-                            "CENTER" -> "TextAlign.Center"
-                            "JUSTIFIED" -> "TextAlign.Justify"
+                        "style = currentTextStyle().copy".args(
+                                "color = " + when (this.fills?.get(0)?.type) {
+                                    "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
+                                        this.color.toComposeColor(node.opacity.toFloat())
+                                    }
+                                    else -> "Color.Black"
+                                },
+                                //TODO: RTL text support
+                                "textAlign = " + when (this.textAlignHorizontal) {
+                                    "LEFT" -> "TextAlign.Left"
+                                    "RIGHT" -> "TextAlign.Right"
+                                    "CENTER" -> "TextAlign.Center"
+                                    "JUSTIFIED" -> "TextAlign.Justify"
 
-                            else -> throw Exception("Horizontal text alignment type ${this.textAlignHorizontal} is new to me")
-                        },
-                        "fontSize = ${node.fontSize}.sp"
-                    ),
-                    escapeCharacters = true
+                                    else -> throw Exception("Horizontal text alignment type ${this.textAlignHorizontal} is new to me")
+                                },
+                                "fontSize = ${node.fontSize}.sp"
+                        ),
+                        escapeCharacters = false
                 )
             }}
             
@@ -266,7 +267,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
 
 
 private fun Element(name: String, vararg parameters: String, body: () -> String) =
-    Element(name, (parameters).joinToString(", "), body.invoke())
+        Element(name, (parameters).joinToString(", "), body.invoke())
 
 private fun Element(name: String, parameters: String, body: String) = """
     $name($parameters) {
@@ -275,30 +276,16 @@ private fun Element(name: String, parameters: String, body: String) = """
 """.trimIndent()
 
 
-//DONE: When parent is a Frame layout, and the constraints are not Top and Left
-//DONE: Learn about equivelants to sConstraints in Compose
-//Problem: Constraints in Figma change the x, y, width and height when changes are made to the parent element
-// Convert dps into percentages if the Constraints are not top and left?
-// Using constraint layouts can be an easy enough solution
+//TODO: Remove usage of this
 fun BaseNodeMixin.localX(parent: BaseNodeMixin? = null as BaseNodeMixin): Double {
 
     if (this is LayoutMixin) {
         return this.x
     }
-
-//    From when this used to use the api rather than the plugin interface
-//    if (parent is LayoutMixin && this is LayoutMixin) {
-//        val parentLayout = parent as LayoutMixin
-//        val parentX = parentLayout.x.toDouble()
-//        val thisX = this.x.toDouble()
-//        return (Math.abs(parentX) - Math.abs(thisX)) * -parentX.compareTo(thisX)
-//    } else if (this is LayoutMixin) {
-//        return this.x
-//    }
     throw Exception("Not a a layout")
 }
 
-
+//TODO: Remove usage of this
 fun BaseNodeMixin.localY(parent: BaseNodeMixin? = null): Double {
     if (this is LayoutMixin) {
         return this.y

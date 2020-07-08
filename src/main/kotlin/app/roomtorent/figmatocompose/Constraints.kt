@@ -1,171 +1,168 @@
 package app.roomtorent.figmatocompose
 
 import BaseNodeMixin
+import ChildrenMixin
 import ConstraintMixin
+import Constraints
 import DefaultFrameMixin
 import LayoutMixin
+import TextNode
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
-fun horizontalConstraints(
-        index: Int,
-        childConstraints: Pair<String, BaseNodeMixin>,
-        childLayout: LayoutMixin,
-        node: DefaultFrameMixin,
-        childNode: BaseNodeMixin
-): String {
-    return """
-        ${when ((childConstraints.second as ConstraintMixin).constraints?.horizontal) {
-        //Left constrained to left not necessary as this is default
-        "MIN",
-        "LEFT" -> """
-                                left constrainTo parent.left
-                                width = ${"valueFixed".args("${childLayout.width}.dp")}
-                                left.margin = ${childNode.localX(node)}.dp
-                            """.trimIndent()
-        "MAX",
-        "RIGHT" -> """
-                                right constrainTo parent.right
-                                width = ${"valueFixed".args("${childLayout.width}.dp")}
-                                right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
-                   """.trimIndent()
-        // Percentages (heh not really "per cent" as of dev11)
-        "SCALE" ->
-            """
-                        left constrainTo parent.left
-                        right constrainTo parent.right
-                        width = percent(${(childLayout.width / node.width) * 1/*00*/}f)
-                        horizontalBias = ${childNode.localX(node) / (node.width - childLayout.width)}f
-            """.trimIndent()
-        //Margins
-        "STRETCH",
-        "LEFT_RIGHT" -> """
-                            left constrainTo parent.left
-                            left.margin = ${childNode.localX(node)}.dp
-                            right constrainTo parent.right
-                            right.margin = ${node.width - (childLayout.width + childNode.localX(node))}.dp
-                            width = percent(${(childLayout.width / node.width) * 1/*00*/}f)
-                        """.trimIndent()
-        "CENTER" -> """
-                        left constrainTo parent.left
-                        right constrainTo parent.right
-                        horizontalBias = ${childNode.localX(node) / (node.width - childLayout.width)}f
-                    """.trimIndent()
+enum class Constraint {
+    //    Most X or Y / Bottom or Right
+    MIN,
 
-        else -> throw Exception("nonexistant or unknown constraint type")
-    }}
-    """.trimIndent()
+    //    Least X or Y / Top or Left
+    MAX,
+
+    //    Fixed percentages all around
+    CENTER,
+
+    //    Fixed Margins
+    STRETCH,
+
+    //    Unspecified with - position in center
+    SCALE
 }
 
-fun verticalConstraints(
-        index: Int,
-        childConstraints: Pair<String, BaseNodeMixin>,
-        childLayout: LayoutMixin,
-        node: DefaultFrameMixin,
-        childNode: BaseNodeMixin
-): String {
-    return """
-        ${when ((childConstraints.second as ConstraintMixin).constraints?.vertical) {
-        //Left constrained to left not necessary as this is default
-        "MIN",
-        "TOP" -> """
-                                top constrainTo parent.top
-                                height = ${"valueFixed".args("${childLayout.height}.dp")}
-                                top.margin = ${childNode.localY(node)}.dp
-                            """.trimIndent()
-        "MAX",
-        "BOTTOM" -> """
-                                bottom constrainTo parent.bottom
-                                height = ${"valueFixed".args("${childLayout.height}.dp")}
-                                bottom.margin = ${node.height - (childLayout.height + childNode.localY(node))}.dp 
-                            """.trimIndent()
-        // Percentages
-        "SCALE" ->
-            """
-                        top constrainTo parent.top
-                        bottom constrainTo parent.bottom
-                        height = percent(${(childLayout.height / node.height) * 1/*00*/}f)
-                        verticalBias = ${childNode.localY(node) / (node.height - childLayout.height)}f
-            """.trimIndent()
-        //Margins
-        "STRETCH",
-        "TOP_BOTTOM" -> """
-                            top constrainTo parent.top
-                            bottom constrainTo parent.bottom
-                            height = percent(${(childLayout.height / node.height) * 1/*00*/}f)
-                            bottom.margin = ${node.height - (childLayout.height + childNode.localY(node))}.dp
-                            top.margin = ${childNode.localY(node)}.dp
-                        """.trimIndent()
-        "CENTER" -> """
-                        top constrainTo parent.top
-                        bottom constrainTo parent.bottom
-                        verticalBias = ${childNode.localY(node)
-                .toDouble() / (node.height - childLayout.height)}f
-                        
-                    """.trimIndent()
-        else -> throw Exception("nonexistant or unknown constraint type")
-    }}
-    """.trimIndent()
+class FigmaConstraintSet(val horizontal: Constraint, val vertical: Constraint) {
+    constructor(constraints: Constraints) : this(
+            horizontal = typedConstraint(constraints.horizontal),
+            vertical = typedConstraint(constraints.vertical))
 }
 
-//TODO When to Fill Max Size
-fun frameToComposeConstraintsLayout(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
-    return with(node) {
-        if (children != null) {
-            //TODO: Refactor with knowledge that all ConstraintMixins are also LayoutMixins
-            val childrenTagPairs = children!!
-                    .filter { it is ConstraintMixin }
-                    .map { Pair(it.name ?: it.id ?: throw Exception("No id!"), it) }
-
-
-            "ConstraintLayout".args(
-                    "modifier = ${Mods(extraModifiers) { addStyleMods(node) }}",
-                    "constraintSet = ${"ConstraintSet".body(
-                            when {
-//                                Special scenarios where more short constraints are possible
-                                else -> """
-                    ${childrenTagPairs.mapIndexed() { index: Int,
-                                                      nameNodePair: Pair<String, BaseNodeMixin> ->
-                                    "val ${nameNodePair.first.toKotlinIdentifier()}_${index} = tag(\"${index}_${nameNodePair.first}\") "
-                                }.joinToString("\n")}
-                        
-                    ${childrenTagPairs.mapIndexed { index: Int, nameNodePair: Pair<String, BaseNodeMixin> -> // Constraints
-                                    val childNode = nameNodePair.second as BaseNodeMixin
-                                    val childLayout = nameNodePair.second as LayoutMixin
-                                    """
-                           ${"${nameNodePair.first.toKotlinIdentifier()}_${index}.apply".body(
-                                            """
-                            ${horizontalConstraints(
-                                                    index,
-                                                    nameNodePair,
-                                                    childLayout,
-                                                    node,
-                                                    childNode
-                                            )}
-                            ${verticalConstraints(
-                                                    index,
-                                                    nameNodePair,
-                                                    childLayout,
-                                                    node,
-                                                    childNode
-                                            )}
-                            
-                           """.trimIndent()
-                                    )} 
-                        """.trimIndent()
-
-                                }.joinToString("\n")}
-                """.trimIndent()
-                            }
-                    )}"
-            ).body(
-                    """
-               // Constraint layout body
-                    ${children?.mapIndexed { index, child ->
-                        makeCompose(child) {
-                            tag("${index}_${child.name}")
-                        }
-                    }?.joinToString("\n")}
-                """.trimIndent()
-            )
-        } else "Box(){}"
+private fun typedConstraint(constraint: String): Constraint {
+    return when (constraint) {
+        "MIN" -> Constraint.MIN
+        "MAX" -> Constraint.MAX
+        "CENTER" -> Constraint.CENTER
+        "STRETCH" -> Constraint.STRETCH
+        "SCALE" -> Constraint.SCALE
+        else -> throw Exception("Unknown constraint type $constraint")
     }
 }
+
+fun getComposeConstraintAndSizeCode(parent: LayoutMixin, child: ConstraintMixin, referenceName: String): String {
+    val constraintSet = FigmaConstraintSet(child.constraints ?: throw Exception("Constraints shouldn't be null"))
+    val childWidth = (child as LayoutMixin).width
+    val childHeight = (child as LayoutMixin).height
+    val matchesParentWidth = parent.width == childWidth
+    val matchesParentHeight = parent.height == childHeight
+    val matchesParentSize = matchesParentWidth && matchesParentHeight
+
+
+    val conciseEquivalent: String? = when {
+        //TODO: Consider replacing with fillMaxSize(), though this optimization is more the domain of android studio
+        matchesParentSize -> {
+            // Normally I wouldn't dare pollute a tool with Do What I Mean
+            // and even though if constraints are not center, this can lead to resizing differently from the design
+            // 99.9% of cases where a child is the same size as its parent in the design, it is meant to occupy all its space in all scenarios
+            // for the 0.01%, it should be edited
+            """
+                centerTo(parent)
+                width = Dimension.fillToConstraints
+                height = Dimension.fillToConstraints
+            """.replaceIndent("   ")
+        }
+        else -> null
+    }
+
+    return conciseEquivalent ?: {
+        val (composeHorizontalConstraint: String, composeWidth: String) =
+                getComposeConstraintAndSize(constraintSet.horizontal, childWidth, child.x, parent.width, "start", "end", "Horizontal")
+        val (composeVerticalConstraint: String, composeHeight: String) =
+                getComposeConstraintAndSize(constraintSet.vertical, childHeight, child.y, parent.height, "top", "bottom", "Vertical")
+        """
+            $composeHorizontalConstraint
+            $composeVerticalConstraint
+            width = $composeWidth
+            height = $composeHeight
+        """.trimIndent()
+    }()
+}
+
+private fun getComposeConstraintAndSize(
+        constraint: Constraint,
+        childSizeInDimension: Double,
+        childPositionOnDimension: Double,
+        parentSizeInDimension: Double,
+        minName: String,
+        maxName: String,
+        dimensionName: String
+): Pair<String, String> {
+    var composeDimensionSize: String = ""
+    var composeConstraint: String = ""
+    when (constraint) {
+//          Most X or Y / Bottom or Right
+        Constraint.MAX -> {
+            composeDimensionSize = "Dimension.value".args(childSizeInDimension.roundedDp())
+            composeConstraint = "${maxName}.linkTo".args("parent.${maxName}", (parentSizeInDimension - (childSizeInDimension + childPositionOnDimension)).roundedDp())
+        }
+//          Least X or Y / Top or Left
+        Constraint.MIN -> {
+            composeDimensionSize = "Dimension.value".args(childSizeInDimension.roundedDp())
+            composeConstraint = "${minName}.linkTo".args("parent.${minName}", childPositionOnDimension.roundedDp())
+        }
+//          Fixed percentages all around
+        Constraint.SCALE -> {
+            var bias = (childPositionOnDimension / (parentSizeInDimension - childSizeInDimension))
+            if (bias.isNaN()) bias = 0.5
+            composeDimensionSize = "Dimension.percent".args("${(childSizeInDimension / parentSizeInDimension).roundedForHuman()}f")
+            composeConstraint = "linkTo(parent.${minName}, parent.${maxName}, bias = ${bias.roundedForHuman()}f)"
+        }
+//          Fixed Margins
+        Constraint.STRETCH -> {
+            composeConstraint = """
+              ${"${minName}.linkTo".args("parent.${minName}", childPositionOnDimension.roundedDp())}
+              ${"${maxName}.linkTo".args("parent.${maxName}", (parentSizeInDimension - (childSizeInDimension + childPositionOnDimension)).roundedDp())}
+          """.trimIndent()
+            composeDimensionSize = "Dimension.percent".args("${(childSizeInDimension / parentSizeInDimension).roundedForHuman()}f")
+        }
+//          Unspecified with - position in center
+        Constraint.CENTER -> {
+            composeDimensionSize = "Dimension.value".args(childSizeInDimension.roundedDp())
+            composeConstraint = "center${dimensionName}lyTo(parent)"
+        }
+    }
+    return Pair(composeConstraint, composeDimensionSize)
+}
+
+//TODO: Flatten for group nodes since they have no impact
+fun childrenMixinToConstraintsLayout(node: ConstraintMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+    if(node !is LayoutMixin || node !is BaseNodeMixin || node !is ChildrenMixin) throw Exception("Can't create constraint layout without dimensions of the frame")
+    //Create references
+    val constraintReferences = arrayListOf<String>()
+
+    val constraintChildren: List<String> = node.children?.map { childNode ->
+        val constraintReference = childNode.name!!.toKotlinIdentifier().also { constraintReferences.add(it) }
+        makeCompose(childNode) {
+            //Some children of a frame may not be
+            if (childNode is ConstraintMixin && childNode is LayoutMixin) {
+                constrainAs(constraintReference, getComposeConstraintAndSizeCode(node, childNode, constraintReference))
+            } else {
+                throw Exception("All children of a frame are expected to have constraints")
+            }
+        }
+    } ?: listOf()
+    val createComposeReferencesCode = ""
+
+    if(constraintChildren.isEmpty()) return "Box(${Mods(extraModifiers) { addStyleMods(node) }})"
+    return """
+            ConstraintLayout(${Mods(extraModifiers) { addStyleMods(node) }}) {
+                val (${constraintReferences.joinToString(separator = ", ")}) = createRefs()
+                $createComposeReferencesCode
+                
+                 ${constraintChildren.joinToString(separator = "\n")}
+            }
+            """.trimIndent()
+}
+
+fun Double.roundTo(numFractionDigits: Int): Double {
+    val factor = 10.0.pow(numFractionDigits.toDouble())
+    return (this * factor).roundToInt() / factor
+}
+
+fun Double.roundedForHuman(): String = this.roundTo(Settings.Optimizations.dpDecimalPlaces).toString()
+fun Double.roundedDp(): String = this.roundedForHuman() + ".dp"

@@ -24,7 +24,7 @@ open class RGBA(
 
     ) : Serializable
 
-fun RGBA.toComposeColor(opacityOverride: Float? = null) = "Color(${this.r}f, ${this.g}f, ${this.b}f, ${opacityOverride ?: this.a}f)"
+fun RGBA.toComposeColor(opacityOverride: Float? = null) = "Color(${this.r.roundedForHuman()}f, ${this.g.roundedForHuman()}f, ${this.b.roundedForHuman()}f, ${opacityOverride ?: this.a.roundedForHuman()}f)"
 public fun String.removeNoAffectPatterns(): String =
     //NaNf biases mean the child is the same width as the parent so the bias has no affect
     this.replace(Regex(".*verticalBias = NaNf"), "")
