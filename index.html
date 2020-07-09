@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Begin Jekyll SEO tag v2.6.1 -->
+    <title>Designs to Jetpack Compose converter | FigmaToCompose</title>
+    <meta name="generator" content="Jekyll v3.8.7" />
+    <meta property="og:title" content="Designs to Jetpack Compose converter" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="description" content="Plugin and backend to convert Figma designs to Jetpack Compose code" />
+    <meta property="og:description" content="Plugin and backend to convert Figma designs to Jetpack Compose code" />
+    <link rel="canonical" href="https://caelumf.github.io/FigmaToCompose/" />
+    <meta property="og:url" content="https://caelumf.github.io/FigmaToCompose/" />
+    <meta property="og:site_name" content="FigmaToCompose" />
+    <script type="application/ld+json">
+        {"@type":"WebSite","headline":"Designs to Jetpack Compose converter","url":"https://caelumf.github.io/FigmaToCompose/","name":"FigmaToCompose","description":"Plugin and backend to convert Figma designs to Jetpack Compose code","@context":"https://schema.org"}</script>
+    <!-- End Jekyll SEO tag -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <link rel="stylesheet" href="/FigmaToCompose/assets/css/style.css?v=eeb31c7c9369726e1ca56cb1371e391c387aae95">
+</head>
+<body>
+<section class="page-header">
+    <h1 class="project-name">FigmaToCompose</h1>
+    <h2 class="project-tagline">Plugin and backend to convert Figma designs to Jetpack Compose code</h2>
+
+    <a href="https://github.com/CaelumF/FigmaToCompose" class="btn">View on GitHub</a>
+
+
+</section>
+
+<section class="main-content">
+    <h1 id="designs-to-jetpack-compose-converter">Designs to Jetpack Compose converter</h1>
+    <p>Easily convert <a href="https://www.figma.com/">Figma</a> designs directly to <a href="https://developer.android.com/jetpack/compose">Jetpack Compose</a> code. (Not affiliated with either of them)</p>
+
+    <p>This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
+        to Jetpack Compose and sets the clipboard to it</p>
+
+    <p>Jetpack Compose: Dev14
+        Figma release: June 25th 2020</p>
+
+    <h1 id="usage">Usage:</h1>
+    <p>With the <a href="todo:">plugin</a> installed, start the server by cloning this repo, cd-ing into it and running:</p>
+
+    <p><code class="language-plaintext highlighter-rouge">./gradlew run --args="-config=application.conf"</code></p>
+
+    <p>The outputted code makes usage of some utility functions, so you’ll need this pasted into a file in your project:
+        (this next code snippet is CC0 / all of my rights waived)</p>
+    <div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">vSpacingArrangement</span><span class="p">(</span><span class="n">spacingPx</span><span class="p">:</span> <span class="nc">Int</span><span class="p">):</span> <span class="nc">Arrangement</span><span class="p">.</span><span class="nc">Vertical</span> <span class="p">=</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">Arrangement</span><span class="p">.</span><span class="nc">Vertical</span> <span class="p">{</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">arrange</span><span class="p">(</span>
+        <span class="n">totalSize</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;,</span>
+        <span class="n">layoutDirection</span><span class="p">:</span> <span class="nc">LayoutDirection</span>
+    <span class="p">):</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">positions</span> <span class="p">=</span> <span class="n">mutableListOf</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;()</span>
+        <span class="kd">var</span> <span class="py">current</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="n">size</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span>
+            <span class="n">positions</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">current</span> <span class="p">+=</span> <span class="n">it</span> <span class="p">+</span> <span class="n">spacingPx</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">positions</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">fun</span> <span class="nf">hSpacingArrangement</span><span class="p">(</span><span class="n">spacingPx</span><span class="p">:</span> <span class="nc">Int</span><span class="p">):</span> <span class="nc">Arrangement</span><span class="p">.</span><span class="nc">Horizontal</span> <span class="p">=</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">Arrangement</span><span class="p">.</span><span class="nc">Horizontal</span> <span class="p">{</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">arrange</span><span class="p">(</span>
+        <span class="n">totalSize</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;,</span>
+        <span class="n">layoutDirection</span><span class="p">:</span> <span class="nc">LayoutDirection</span>
+    <span class="p">):</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">positions</span> <span class="p">=</span> <span class="n">mutableListOf</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;()</span>
+        <span class="kd">var</span> <span class="py">current</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="n">size</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span>
+            <span class="n">positions</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">current</span> <span class="p">+=</span> <span class="n">it</span> <span class="p">+</span> <span class="n">spacingPx</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">positions</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@Composable</span>
+<span class="k">fun</span> <span class="nc">Dp</span><span class="p">.</span><span class="nf">toIntInPx</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">=</span> <span class="nf">with</span><span class="p">(</span><span class="nc">DensityAmbient</span><span class="p">.</span><span class="n">current</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span><span class="nd">@toIntInPx</span> <span class="k">this</span><span class="nd">@toIntInPx</span><span class="p">.</span><span class="nf">toIntPx</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+    <p>This requires a JDK installed, if you’re doing Android dev it probably already is :)</p>
+
+    <p>Now you can open the plugin window in Figma, select a node, and click “Genarate” to get the Jetpack Compose code to display it!</p>
+
+    <h1 id="use-cases">Use cases</h1>
+    <p>Often times designs contain non-repeated distances, colours and proportions. Replicating these designs can be very tedious, and discrepancies in design and implementation can lead to “split realities”.</p>
+
+    <p>Primarily, this is to cut out taking measurements, reduce design-implementation back and fourth and save time/energy even when the designer and implementer are the same person</p>
+
+    <h1 id="features--mappings">Features / mappings</h1>
+
+    <table>
+        <thead>
+        <tr>
+            <th style="text-align: center">feature</th>
+            <th>Jetpack Compose feature</th>
+            <th>Note</th>
+            <th>Missing / to-do</th>
+            <th> </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="text-align: center">Frame</td>
+            <td>Constraint Layout</td>
+            <td>Supports start, end, scale, stretch, start-end (maintain margins dp), center</td>
+            <td>auto remove redundant constraints</td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Nested nodes</td>
+            <td>Composables with nested calls to them</td>
+            <td>This is a nice solution for updating implementation to design</td>
+            <td> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Group</td>
+            <td>Box</td>
+            <td>!Recommend using the dropdown to convert to a Frame and restart plugin as workaround for figma bug</td>
+            <td>Pass parent group’s constraints to group’s children</td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Text</td>
+            <td>Text</td>
+            <td>Supports solid colours, font size vertical and horizontal text align</td>
+            <td>Font family, bold, italic, advanced Figma features</td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Auto layout</td>
+            <td>Row/Column</td>
+            <td> </td>
+            <td> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Vectors</td>
+            <td>Image(vectorResource(…))</td>
+            <td>Creates a vector painter looking at a drawable with the svg export name on nodes with svg exports</td>
+            <td>Automation for importing svgs from figma</td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Rectangle</td>
+            <td>Box</td>
+            <td>Includes generic “style mods” (bg, shadow, )</td>
+            <td> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Shadow fill</td>
+            <td>drawShadow</td>
+            <td>Does not work well for non-rectangles or where shadow is applied to parent of many children</td>
+            <td>Other shapes, find solution for shadows on parents</td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Corner Radius</td>
+            <td>.clip(CornerRadiusShape)</td>
+            <td> </td>
+            <td> </td>
+            <td> </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Gradient fill</td>
+            <td>drawBackground(HorizontalGradient(…)</td>
+            <td>Only currently supports horizontal gradients</td>
+            <td> </td>
+            <td> </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h1 id="development">Development</h1>
+
+    <p>The backend server accepts Figma’s json on a post to <code class="language-plaintext highlighter-rouge">/</code> on port 9020. Port configurable from application.conf</p>
+
+    <h2 id="figma-plugin-development">Figma plugin development</h2>
+    <h6 id="for-linux">For Linux</h6>
+
+    <p>Unfortunately for now a shared clipboard from a Windows or Mac VM or a host running <a href="https://github.com/debauchee/barrier">Barrier</a> is needed to “conveniently” use local changes,
+        until Figma supports developing / running unpublished plugins on Linux</p>
+
+    <h6 id="mac-or-windows">Mac or Windows</h6>
+    <p>Within the FigmaPlugin directory lies the code to a plugin that can be imported on Windows or Mac. In Figma client app (not web), go to
+        Plugins -&gt; Development &gt; New Plugin and select the manifest.json</p>
+
+    <h1 id="troubleshooting">Troubleshooting</h1>
+
+    <h2 id="arrayindexoutofbounds-error-in-rendering">ArrayIndexOutOfBounds error in rendering</h2>
+    <p>Check that there are no recursive composables, and make that no Figma components
+        have the same name.</p>
+
+    <h1 id="todo">TODO:</h1>
+    <p>See Issues</p>
+
+
+    <footer class="site-footer">
+
+        <span class="site-footer-owner"><a href="https://github.com/CaelumF/FigmaToCompose">FigmaToCompose</a> is maintained by <a href="https://github.com/CaelumF">CaelumF</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+    </footer>
+</section>
+
+
+</body>
+</html>
+dd
