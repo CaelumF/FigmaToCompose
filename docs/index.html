@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Begin Jekyll SEO tag v2.6.1 -->
+    <title>Designs to Jetpack Compose converter | FigmaToCompose</title>
+    <meta name="generator" content="Jekyll v3.8.7"/>
+    <meta property="og:title" content="Designs to Jetpack Compose converter"/>
+    <meta property="og:locale" content="en_US"/>
+    <meta name="description" content="Plugin and backend to convert Figma designs to Jetpack Compose code"/>
+    <meta property="og:description" content="Plugin and backend to convert Figma designs to Jetpack Compose code"/>
+    <link rel="canonical" href="https://caelumf.github.io/FigmaToCompose/"/>
+    <meta property="og:url" content="https://caelumf.github.io/FigmaToCompose/"/>
+    <meta property="og:site_name" content="FigmaToCompose"/>
+    <script type="application/ld+json">
+        {
+            "@type": "WebSite",
+            "headline": "Designs to Jetpack Compose converter",
+            "url": "https://caelumf.github.io/FigmaToCompose/",
+            "name": "FigmaToCompose",
+            "description": "Plugin and backend to convert Figma designs to Jetpack Compose code",
+            "@context": "https://schema.org"
+        }</script>
+    <!-- End Jekyll SEO tag -->
+
+    <link rel="icon" href="./fct-logo.png"/>
+    <style>
+        body {
+            background-color: #414141;
+            width: 100vw;
+            color: white;
+            font-family: Roboto, "Noto Sans", "Noto Sans JP", "Noto Sans KR", "Noto Naskh Arabic", "Noto Sans Thai", "Noto Sans Hebrew", "Noto Sans Bengali", sans-serif;
+            font-size: x-large;
+            display: grid;
+            grid-template-columns: 1fr 30rem 30rem 1fr[x];
+            /*grid-template-rows: 20em [y];*/
+        }
+
+        @media only screen and (max-width: 60rem) {
+            body {
+                background-color: aqua;
+                grid-template-columns: 0px 1fr 1fr 0px [x];
+            }
+        }
+        * {
+            padding: 0px;
+            margin: 0px;
+        }
+        a {
+          color: aqua;
+        }
+        section {
+            grid-column: 2 / 4;
+        }
+        section.secondary {
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            margin-bottom: 10rem;
+        }
+        section.secondary p{
+            margin-left: 1rem;
+        }
+        section.page-header {
+            grid-column: 2 / 4;
+            display: flex;
+            align-content: center;
+            justify-content: center;
+            flex-direction: row;
+            margin-bottom: 20rem;
+        }
+        section.page-header div h1 {
+            margin: 0 auto;
+            font-size: 5rem;
+        }
+        section.main-content {
+            /*grid-area: y 8 / x 4 / y 17 / x 8;*/
+            /*grid-column-start: 1;*/
+        }
+        section.figma-plugin {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+
+
+
+        }
+        section.figma-plugin img {
+            box-shadow: 0px 2rem 2rem rgba(0, 0, 0, 0.25);
+            margin: 2rem;
+
+        }
+        section.figma-plugin p {
+            font-style: normal;
+            font-weight: normal;
+            font-size: 25px;
+            line-height: 29px;
+        }
+
+        section.figma-plugin a, section.figma-plugin svg {
+            /*margin-top: 5rem;*/
+            position: absolute;
+            bottom: 1rem;
+        }
+
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <link rel="stylesheet" href="/FigmaToCompose/assets/css/style.css?v=eeb31c7c9369726e1ca56cb1371e391c387aae95">
+</head>
+<body>
+<section class="page-header">
+    <div>
+        <img  width="380" src="fct-logo.png" alt="A 6 toothed cog with a designyboye arrow going through it">
+        <h1>Figma to</h1>
+        <h1>Compose</h1>
+    </div>
+<!--        <a href="https://github.com/CaelumF/FigmaToCompose" class="btn">View on GitHub</a>-->
+</section>
+
+<section class="figma-plugin secondary">
+    <img width="306" src="plugin-screenshot.png" alt="Screenshot of the plugin">
+    <div style="margin-top: 2rem; position: relative;">
+        <h1>Figma plugin</h1>
+        <p>Just select any node to convert it to Kotlin code for Jetpack Compose</p>
+
+        <a target="_blank" href="https://www.figma.com/community/plugin/856651176156241740/Figma-to-Compose">
+            <svg width="165" height="61" viewBox="0 0 165 61" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g filter="url(#filter0_dd)">
+                    <path d="M7.00005 9C7.00005 6.23858 9.23862 4 12 4H152C154.761 4 157 6.23858 157 9V49C157 51.7614 154.761 54 152 54H12C9.23863 54 7.00005 51.7614 7.00005 49V9Z" fill="#6979F8"/>
+                    <path d="M24.9297 34H23.4297V22.625H24.9297V34ZM28.8203 25.5469L28.8672 26.6094C29.513 25.7969 30.3568 25.3906 31.3984 25.3906C33.1849 25.3906 34.0859 26.3984 34.1016 28.4141V34H32.6562V28.4062C32.651 27.7969 32.5104 27.3464 32.2344 27.0547C31.9635 26.763 31.5391 26.6172 30.9609 26.6172C30.4922 26.6172 30.0807 26.7422 29.7266 26.9922C29.3724 27.2422 29.0964 27.5703 28.8984 27.9766V34H27.4531V25.5469H28.8203ZM41.2031 31.7578C41.2031 31.3672 41.0547 31.0651 40.7578 30.8516C40.4661 30.6328 39.9531 30.4453 39.2188 30.2891C38.4896 30.1328 37.9089 29.9453 37.4766 29.7266C37.0495 29.5078 36.7318 29.2474 36.5234 28.9453C36.3203 28.6432 36.2188 28.2839 36.2188 27.8672C36.2188 27.1745 36.5104 26.5885 37.0938 26.1094C37.6823 25.6302 38.4323 25.3906 39.3438 25.3906C40.3021 25.3906 41.0781 25.638 41.6719 26.1328C42.2708 26.6276 42.5703 27.2604 42.5703 28.0312H41.1172C41.1172 27.6354 40.9479 27.2943 40.6094 27.0078C40.276 26.7214 39.8542 26.5781 39.3438 26.5781C38.8177 26.5781 38.4062 26.6927 38.1094 26.9219C37.8125 27.151 37.6641 27.4505 37.6641 27.8203C37.6641 28.1693 37.8021 28.4323 38.0781 28.6094C38.3542 28.7865 38.8516 28.9557 39.5703 29.1172C40.2943 29.2786 40.8802 29.4714 41.3281 29.6953C41.776 29.9193 42.1068 30.1901 42.3203 30.5078C42.5391 30.8203 42.6484 31.2031 42.6484 31.6562C42.6484 32.4115 42.3464 33.0182 41.7422 33.4766C41.138 33.9297 40.3542 34.1562 39.3906 34.1562C38.7135 34.1562 38.1146 34.0365 37.5938 33.7969C37.0729 33.5573 36.6641 33.224 36.3672 32.7969C36.0755 32.3646 35.9297 31.8984 35.9297 31.3984H37.375C37.401 31.8828 37.5938 32.2682 37.9531 32.5547C38.3177 32.8359 38.7969 32.9766 39.3906 32.9766C39.9375 32.9766 40.375 32.8672 40.7031 32.6484C41.0365 32.4245 41.2031 32.1276 41.2031 31.7578ZM46.4922 23.5V25.5469H48.0703V26.6641H46.4922V31.9062C46.4922 32.2448 46.5625 32.5 46.7031 32.6719C46.8438 32.8385 47.0833 32.9219 47.4219 32.9219C47.5885 32.9219 47.8177 32.8906 48.1094 32.8281V34C47.7292 34.1042 47.3594 34.1562 47 34.1562C46.3542 34.1562 45.8672 33.9609 45.5391 33.5703C45.2109 33.1797 45.0469 32.625 45.0469 31.9062V26.6641H43.5078V25.5469H45.0469V23.5H46.4922ZM54.9844 34C54.901 33.8333 54.8333 33.5365 54.7812 33.1094C54.1094 33.8073 53.3073 34.1562 52.375 34.1562C51.5417 34.1562 50.8568 33.9219 50.3203 33.4531C49.7891 32.9792 49.5234 32.3802 49.5234 31.6562C49.5234 30.776 49.8568 30.0938 50.5234 29.6094C51.1953 29.1198 52.138 28.875 53.3516 28.875H54.7578V28.2109C54.7578 27.7057 54.6068 27.3047 54.3047 27.0078C54.0026 26.7057 53.5573 26.5547 52.9688 26.5547C52.4531 26.5547 52.0208 26.6849 51.6719 26.9453C51.3229 27.2057 51.1484 27.5208 51.1484 27.8906H49.6953C49.6953 27.4688 49.8438 27.0625 50.1406 26.6719C50.4427 26.276 50.849 25.9635 51.3594 25.7344C51.875 25.5052 52.4401 25.3906 53.0547 25.3906C54.0286 25.3906 54.7917 25.6354 55.3438 26.125C55.8958 26.6094 56.1823 27.2786 56.2031 28.1328V32.0234C56.2031 32.7995 56.3021 33.4167 56.5 33.875V34H54.9844ZM52.5859 32.8984C53.0391 32.8984 53.4688 32.7812 53.875 32.5469C54.2812 32.3125 54.5755 32.0078 54.7578 31.6328V29.8984H53.625C51.8542 29.8984 50.9688 30.4167 50.9688 31.4531C50.9688 31.9062 51.1198 32.2604 51.4219 32.5156C51.724 32.7708 52.112 32.8984 52.5859 32.8984ZM60.0391 34H58.5938V22H60.0391V34ZM63.9297 34H62.4844V22H63.9297V34Z" fill="white"/>
+                    <line x1="109.322" y1="14" x2="109.322" y2="44" stroke="white" stroke-opacity="0.3" stroke-width="0.5"/>
+                    <path d="M130.152 35L136.152 29L130.152 23" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                    <filter id="filter0_dd" x="-1" y="0" width="166" height="66" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/>
+                        <feOffset dy="4"/>
+                        <feGaussianBlur stdDeviation="4"/>
+                        <feColorMatrix type="matrix" values="0 0 0 0 0.196487 0 0 0 0 0.196487 0 0 0 0 0.279476 0 0 0 0.06 0"/>
+                        <feBlend mode="multiply" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+                        <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/>
+                        <feOffset dy="4"/>
+                        <feGaussianBlur stdDeviation="2"/>
+                        <feColorMatrix type="matrix" values="0 0 0 0 0.196487 0 0 0 0 0.196487 0 0 0 0 0.279476 0 0 0 0.08 0"/>
+                        <feBlend mode="multiply" in2="effect1_dropShadow" result="effect2_dropShadow"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow" result="shape"/>
+                    </filter>
+                </defs>
+            </svg>
+        </a>
+    </div>
+</section>
+
+<section class="video-demo secondary">
+    <h1>Video demo</h1>
+    <video width="100%" controls autoplay>
+        <source type="video/mp4" src="./FTC.mp4">
+    </video>
+    <p>Usage of the plugin and converter to create a simple screen</p>
+    <br>
+    <p>Figma's dynamic features such as auto layouts and constraints map really well to Compose's Rows, Columns and ConstraintLayouts.</p>
+</section>
+
+<section class="get-started secondary">
+
+    <h1>Getting started</h1>
+    <p>The converter consists of a JRE backend and a Figma plugin.</p>
+    <br>
+    <p>Checkout the <a href="https://github.com/CaelumF/FigmaToCompose">Github Readme</a> to give it a go 😃</p>
+</section>
+</body>
+</html>

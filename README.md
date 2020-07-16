@@ -8,7 +8,7 @@ Jetpack Compose: Dev14
 Figma release: June 25th 2020
 
 # Usage:
-With the [plugin](todo:) installed, start the server by cloning this repo, cd-ing into it and running:
+With the [plugin](https://www.figma.com/community/plugin/856651176156241740/Figma-to-Compose) installed, start the server by cloning this repo, cd-ing into it and running:
 
 `./gradlew run --args="-config=application.conf"`
 
