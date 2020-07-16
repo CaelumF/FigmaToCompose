@@ -36,8 +36,9 @@ class Settings private constructor() {
     companion object
     class Optimizations private constructor() {
         companion object {
-            val omitExtraShadows: Boolean = true
+            val omitExtraShadows: Boolean = false
             val dpDecimalPlaces = 2
+            val avoidAndroidShadowOptimization: Boolean = true
         }
     }
 }

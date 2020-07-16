@@ -187,7 +187,11 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     }
 
     class DrawShadow(var dp: Float) : ChainableModifier() {
-        override fun addToChain(acc: String) = acc + ".drawShadow".args("${dp}.dp")
+        override fun addToChain(acc: String): String {
+            if(Settings.Optimizations.avoidAndroidShadowOptimization)
+                return "$acc.drawShadow".args("$dp.dp", "opacity = 0.99f")
+            return "$acc.drawShadow".args("$dp.dp")
+        }
         /*TODO: Other parameter: shape: Shape = RectangleShape,
         clipToOutline: Boolean = elevation > 0.dp,
         @FloatRange(from = 0.0, to = 1.0) opacity: Float = 1f*/
