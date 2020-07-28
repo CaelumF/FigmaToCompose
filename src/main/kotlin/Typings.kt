@@ -6,7 +6,7 @@
 //    "EXTERNAL_DELEGATION"
 //)
 
-import app.roomtorent.figmatocompose.RGBA
+import app.roomtorent.figmatocompose.*
 import com.beust.klaxon.TypeFor
 import java.io.Serializable
 

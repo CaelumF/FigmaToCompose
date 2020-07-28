@@ -1,3 +1,7 @@
+package app.roomtorent.figmatocompose
+
+import Effect
+import ShadowEffect
 import com.beust.klaxon.TypeAdapter
 import kotlin.reflect.KClass
 

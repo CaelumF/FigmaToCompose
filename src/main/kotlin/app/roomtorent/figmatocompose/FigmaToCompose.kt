@@ -49,6 +49,7 @@ class ConvertRequest() {
     var copyToClipboard: Boolean? = null
     var resetDecollisionMap: Boolean? = null
     var separateComposablesForEachComponent: Boolean? = null
+    var includePreviews: Boolean? = null
 }
 
 fun Application.main() {
