@@ -135,7 +135,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 private var decollisionMap = HashMap<String, String>()
 fun String.toKotlinIdentifier(): String {
     val original = this
-    val changed = this.replace(Regex("[\\s-/,.()?+\\[\\]:!\"\'{}`<>]"), "_")
+    val changed = this.replace(Regex("[\\s-/,.()?+$\\[\\]:!\"\'{}`<>]"), "_")
     var matches = decollisionMap.getOrPut(changed) { original } == original
     var attempts = 0
     while (!matches) {
