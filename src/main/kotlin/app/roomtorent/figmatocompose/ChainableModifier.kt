@@ -11,13 +11,13 @@ import RectangleCornerMixin
 import ShadowEffect
 import SolidPaint
 
-class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
+class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
     val ownModifiers = arrayListOf<ChainableModifier>()
     val inheritedModifiers: ArrayList<ChainableModifier>
 
     fun getBuiltOptimized(): String {
         var combined = ownModifiers.apply { if (this.isNotEmpty() && inheritedModifiers.isNotEmpty()) add(CustomModSeparator()) } + inheritedModifiers
-        if(combined.filterNot { it is CustomModSeparator || it is None }.isEmpty()) return "Modifier"
+        if (combined.filterNot { it is CustomModSeparator || it is None }.isEmpty()) return "Modifier"
         if (Settings.Optimizations.omitExtraShadows) {
             val biggestShadow: DrawShadow? = combined
                     .filterIsInstance<DrawShadow>()
@@ -48,7 +48,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
         // run the builder again and set our inheritedModifiers to the virtual parent's ownModifiers
         inheritedModifiers = when {
             modifiersFromParent != null -> {
-                val virtualParentModifier = Modifier()
+                val virtualParentModifier = ModifierChain()
                 modifiersFromParent.invoke(virtualParentModifier)
                 virtualParentModifier.ownModifiers
             }
@@ -106,6 +106,9 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
     }
 
     class CornerRadius(val radius: Float) : ChainableModifier() {
+        // Before rectanglecorneradius, to override this,
+        override var order = -1100
+
         override fun addToChain(acc: String): String = "$acc.clip".args("RoundedCornerShape".args("$radius.dp"))
     }
 
@@ -117,6 +120,9 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
             val bottomRightRadius: Double,
             val bottomLeftRadius: Double
     ) : ChainableModifier() {
+        //Should be before shadow
+        override var order = -1000
+
         override fun addToChain(acc: String): String =
                 "$acc.clip".args("RoundedCornerShape".args("$topLeftRadius.dp, $topRightRadius.dp, $bottomRightRadius.dp, $bottomLeftRadius.dp"))
     }
@@ -186,15 +192,29 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
         if (removeSizeModifiers) ownModifiers.removeIf { it is PreferredWidth || it is PreferredHeight || it is PreferredSize }
     }
 
-    class DrawShadow(var dp: Float) : ChainableModifier() {
+    class DrawShadow(var dp: Float, val modifierChain: ModifierChain) : ChainableModifier() {
+        // Should be before background, but after clip/rounded corner
+        override var order = -10000
+
+        /**
+         * Special consideration: If there is a Clip in this chain, then use it(first clip found)'s
+         * Shape as well
+         */
         override fun addToChain(acc: String): String {
-            if(Settings.Optimizations.avoidAndroidShadowOptimization)
-                return "$acc.drawShadow".args("$dp.dp", "opacity = 0.99f")
-            return "$acc.drawShadow".args("$dp.dp")
+            val combinedModifiers = (modifierChain.ownModifiers + modifierChain.inheritedModifiers)
+            val firstCornerRadius: CornerRadius? = combinedModifiers.firstOrNull { it is CornerRadius } as CornerRadius?
+            val firstRectangleCornerRadius: RectangleCornerRadius? = combinedModifiers.firstOrNull { it is RectangleCornerRadius } as RectangleCornerRadius?
+            val shadowShape = when {
+                firstRectangleCornerRadius != null -> with(firstRectangleCornerRadius) {
+                    "shape = ${"RoundedCornerShape".args("$topLeftRadius.dp, $topRightRadius.dp, $bottomRightRadius.dp, $bottomLeftRadius.dp")}"
+                }
+                firstCornerRadius != null -> "shape = ${"RoundedCornerShape".args(firstCornerRadius.radius.toDouble().roundedDp())}"
+                else -> ""
+            }
+            if (Settings.Optimizations.avoidAndroidShadowOptimization)
+                return "$acc.drawShadow".args("$dp.dp", "opacity = 0.99f", shadowShape)
+            return "$acc.drawShadow".args("$dp.dp", shadowShape)
         }
-        /*TODO: Other parameter: shape: Shape = RectangleShape,
-        clipToOutline: Boolean = elevation > 0.dp,
-        @FloatRange(from = 0.0, to = 1.0) opacity: Float = 1f*/
     }
 
 
@@ -255,7 +275,7 @@ class Modifier(modifiersFromParent: (Modifier.() -> Unit)? = null) {
 
     fun none() = ownModifiers.add(None())
 
-    fun drawShadow(dp: Float) = ownModifiers.add(DrawShadow(dp))
+    fun drawShadow(dp: Float) = ownModifiers.add(DrawShadow(dp, this))
 
 
     fun gravity(alignment: AlignmentOption) = ownModifiers.add(Gravity(alignment))

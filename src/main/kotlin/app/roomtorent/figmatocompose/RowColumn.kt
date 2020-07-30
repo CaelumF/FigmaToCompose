@@ -3,7 +3,7 @@ package app.roomtorent.figmatocompose
 import DefaultFrameMixin
 import LayoutMixin
 
-fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (ModifierChain.() -> Unit)?): String {
     return when (node.layoutMode!!) {
         "VERTICAL" -> """
             Column(${Mods(extraModifiers) {
@@ -16,9 +16,9 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
                 if (child is LayoutMixin) {
                     preferredSize(child.width, child.height)
                     when (child.layoutAlign) {
-                        "MIN" -> gravity(Modifier.AlignmentOption.Start)
-                        "MAX" -> gravity(Modifier.AlignmentOption.End)
-                        "CENTER" -> gravity(Modifier.AlignmentOption.CenterHorizontally)
+                        "MIN" -> gravity(ModifierChain.AlignmentOption.Start)
+                        "MAX" -> gravity(ModifierChain.AlignmentOption.End)
+                        "CENTER" -> gravity(ModifierChain.AlignmentOption.CenterHorizontally)
                         "STRETCH" -> fillMaxWidth()
                         else -> throw Exception("unrecognized LayoutAlign ${child.layoutAlign}")
                     }
@@ -40,9 +40,9 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
                 if (child is LayoutMixin) {
                     preferredSize(child.width, child.height)
                     when (child.layoutAlign) {
-                        "MIN" -> gravity(Modifier.AlignmentOption.Start)
-                        "MAX" -> gravity(Modifier.AlignmentOption.End)
-                        "CENTER" -> gravity(Modifier.AlignmentOption.CenterVertically)
+                        "MIN" -> gravity(ModifierChain.AlignmentOption.Start)
+                        "MAX" -> gravity(ModifierChain.AlignmentOption.End)
+                        "CENTER" -> gravity(ModifierChain.AlignmentOption.CenterVertically)
                         "STRETCH" -> fillMaxHeight()
                         else -> throw Exception("unrecognized LayoutAlign ${child.layoutAlign}")
                     }
