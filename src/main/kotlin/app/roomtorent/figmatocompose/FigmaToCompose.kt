@@ -81,7 +81,7 @@ fun Application.main() {
                     fillMaxSize()
                 }.removeNoAffectPatterns()
 
-                val identifier = (convertRequest.rootiestNode?.name ?: "unnamed").toKotlinIdentifier()
+                val identifier = (convertRequest.rootiestNode?.name ?: "unnamed").toKotlinIdentifierDecollisioned()
 
                 val joinedComposables = composables.values.joinToString(separator = "\n")
                 val upperMostComposable = """
@@ -123,8 +123,8 @@ fun Application.main() {
 }
 
 
-fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Unit = { none() }): String {
-    val modifier = Modifier(extraModifiers)
+fun Mods(extraModifiers: (ModifierChain.() -> Unit)? = null, mods: ModifierChain.() -> Unit = { none() }): String {
+    val modifier = ModifierChain(extraModifiers)
     mods.invoke(modifier)
     return modifier.getBuiltOptimized()
 }
@@ -133,7 +133,7 @@ fun Mods(extraModifiers: (Modifier.() -> Unit)? = null, mods: Modifier.() -> Uni
 //If an original doesn't match its associated modified, it is a collision and we can add a number, and check again
 //This requires more lookups than it could, which can be fixed if it ever matters.
 private var decollisionMap = HashMap<String, String>()
-fun String.toKotlinIdentifier(): String {
+fun String.toKotlinIdentifierDecollisioned(): String {
     val original = this
     val changed = this.replace(Regex("[\\s-/,.()?+$\\[\\]:!\"\'{}`<>]"), "_")
     var matches = decollisionMap.getOrPut(changed) { original } == original
@@ -144,10 +144,12 @@ fun String.toKotlinIdentifier(): String {
     return if (attempts > 0) changed + "_" + attempts else changed
 }
 
+fun String.toKotlinIdentifier(): String = this.replace(Regex("[\\s-/,.()?+$\\[\\]:!\"\'{}`<>]"), "_")
+
 var composables: HashMap<String, String> = hashMapOf()
 fun defineComponentFromFrameMixin(node: DefaultFrameMixin): String {
     val name = node.name ?: "unnamed"
-    val identifier = name.toKotlinIdentifier()
+    val identifier = name.toKotlinIdentifierDecollisioned()
     composables[identifier] = """
         @Composable()
         fun $identifier(modifier: Modifier = Modifier) {
@@ -158,7 +160,7 @@ fun defineComponentFromFrameMixin(node: DefaultFrameMixin): String {
     return identifier
 }
 
-fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (ModifierChain.() -> Unit)?): String {
     return when {
         node.layoutMode != null && node.layoutMode != "NONE" -> autoLayoutToComposeRowColumn(
                 node,
@@ -177,15 +179,15 @@ fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifie
  * Note that android resources are all lower case, so for convenience this will convert the name to lowercase which could cause duplicates
  * TODO: Make it easier to import import assets to android project. Plugins already exist for this though
  */
-fun vectorFrameToCompose(node: DefaultFrameMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+fun vectorFrameToCompose(node: DefaultFrameMixin, extraModifiers: (ModifierChain.() -> Unit)?): String {
     val exportSettings = node.exportSettings!!.any { it is ExportSettingsSVG }
-    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toLowerCase()}")}", "modifier = ${Mods(extraModifiers = extraModifiers) {
+    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toKotlinIdentifier()?.toLowerCase()}")}", "modifier = ${Mods(extraModifiers = extraModifiers) {
         preferredSize(node.width, node.height)
         addStyleMods(node)
     }}")
 }
 
-fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = null): String {
+fun makeCompose(node: BaseNodeMixin, extraModifiers: (ModifierChain.() -> Unit)? = null): String {
     return when (node) {
         //Groups will show a size, but the size is based off its dchildren and editing it in figma changes the child size.
         //So for groups we will make a box with no explicit size.
@@ -200,7 +202,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                 "$identifier(${Mods(extraModifiers, mods = {})})"
             }
             node is InstanceNode -> with(node) {
-                val identifier = (node.name ?: "unnamed").toKotlinIdentifier()
+                val identifier = (node.name ?: "unnamed").toKotlinIdentifierDecollisioned()
                 if (!composables.containsKey(identifier)) {
                     defineComponentFromFrameMixin(node)
                 }
@@ -232,9 +234,9 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (Modifier.() -> Unit)? = nu
                         "\\n"
                 ), Mods(extraModifiers) {
                     wrapContentHeight(when (node.textAlignVertical) {
-                        "TOP" -> Modifier.Alignment.Top
-                        "CENTER" -> Modifier.Alignment.CenterVertically
-                        "BOTTOM" -> Modifier.Alignment.Bottom
+                        "TOP" -> ModifierChain.Alignment.Top
+                        "CENTER" -> ModifierChain.Alignment.CenterVertically
+                        "BOTTOM" -> ModifierChain.Alignment.Bottom
 
                         else -> throw Exception("Alignment ${node.textAlignVertical} must be new")
                     })

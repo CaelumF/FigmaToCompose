@@ -4,9 +4,7 @@ import BaseNodeMixin
 import ChildrenMixin
 import ConstraintMixin
 import Constraints
-import DefaultFrameMixin
 import LayoutMixin
-import TextNode
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -130,13 +128,13 @@ private fun getComposeConstraintAndSize(
 }
 
 //TODO: Flatten for group nodes since they have no impact
-fun childrenMixinToConstraintsLayout(node: ConstraintMixin, extraModifiers: (Modifier.() -> Unit)?): String {
+fun childrenMixinToConstraintsLayout(node: ConstraintMixin, extraModifiers: (ModifierChain.() -> Unit)?): String {
     if(node !is LayoutMixin || node !is BaseNodeMixin || node !is ChildrenMixin) throw Exception("Can't create constraint layout without dimensions of the frame")
     //Create references
     val constraintReferences = arrayListOf<String>()
 
     val constraintChildren: List<String> = node.children?.map { childNode ->
-        val constraintReference = childNode.name!!.toKotlinIdentifier().also { constraintReferences.add(it) }
+        val constraintReference = childNode.name!!.toKotlinIdentifierDecollisioned().also { constraintReferences.add(it) }
         makeCompose(childNode) {
             //Some children of a frame may not be
             if (childNode is ConstraintMixin && childNode is LayoutMixin) {
@@ -166,3 +164,11 @@ fun Double.roundTo(numFractionDigits: Int): Double {
 
 fun Double.roundedForHuman(): String = this.roundTo(Settings.Optimizations.dpDecimalPlaces).toString()
 fun Double.roundedDp(): String = this.roundedForHuman() + ".dp"
+
+fun Float.roundTo(numFractionDigits: Int): Double {
+    val factor = 10.0.pow(numFractionDigits.toDouble())
+    return (this * factor).roundToInt() / factor
+}
+
+fun Float.roundedForHuman(): String = this.roundTo(Settings.Optimizations.dpDecimalPlaces).toString()
+fun Float.roundedDp(): String = this.roundedForHuman() + ".dp"
