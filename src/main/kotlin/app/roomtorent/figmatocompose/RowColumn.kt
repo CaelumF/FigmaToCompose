@@ -11,21 +11,23 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
                 node.width
             )
         }}, verticalArrangement = ${"vSpacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
+            ${if(node.verticalPadding?.equals(0.0) == false) "Spacer(modifier = Modifier.height(${node.verticalPadding?.roundedDp()}))" else ""}
             ${node.children?.joinToString("\n") { child ->
-            makeCompose(child) {
-                if (child is LayoutMixin) {
-                    preferredSize(child.width, child.height)
-                    when (child.layoutAlign) {
-                        "MIN" -> gravity(ModifierChain.AlignmentOption.Start)
-                        "MAX" -> gravity(ModifierChain.AlignmentOption.End)
-                        "CENTER" -> gravity(ModifierChain.AlignmentOption.CenterHorizontally)
-                        "STRETCH" -> fillMaxWidth()
-                        else -> throw Exception("unrecognized LayoutAlign ${child.layoutAlign}")
+                makeCompose(child) {
+                    if (child is LayoutMixin) {
+                        preferredSize(child.width, child.height)
+                        when (child.layoutAlign) {
+                            "MIN" -> gravity(ModifierChain.AlignmentOption.Start)
+                            "MAX" -> gravity(ModifierChain.AlignmentOption.End)
+                            "CENTER" -> gravity(ModifierChain.AlignmentOption.CenterHorizontally)
+                            "STRETCH" -> fillMaxWidth()
+                            else -> throw Exception("unrecognized LayoutAlign ${child.layoutAlign}")
+                        }
                     }
                 }
             }
-        }
-        }
+           }
+        ${if(node.verticalPadding?.equals(0.0) == false) "Spacer(modifier = Modifier.height(${node.verticalPadding?.roundedDp()}))" else ""}
         }
             """.trimIndent()
         "HORIZONTAL" -> """
@@ -35,7 +37,8 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             )
             addStyleMods(node)
         }}, horizontalArrangement = ${"hSpacingArrangement".args("${node.itemSpacing}.dp.toIntInPx()")}) {
-                    ${node.children?.joinToString("\n") { child ->
+            ${if(node.horizontalPadding?.equals(0.0) == false) "Spacer(modifier = Modifier.width(${node.horizontalPadding?.roundedDp()}))" else ""}
+            ${node.children?.joinToString("\n") { child ->
             makeCompose(child) {
                 if (child is LayoutMixin) {
                     preferredSize(child.width, child.height)
@@ -50,6 +53,7 @@ fun autoLayoutToComposeRowColumn(node: DefaultFrameMixin, extraModifiers: (Modif
             }
         }
         }
+        ${if(node.horizontalPadding?.equals(0.0) == false) "Spacer(modifier = Modifier.width(${node.horizontalPadding?.roundedDp()}))" else ""}
         }
             """.trimIndent()
         else -> throw Exception("${node.layoutMode}? must be one of those new features")
