@@ -215,9 +215,6 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
                 return "$acc.drawShadow".args("$dp.dp", "opacity = 0.99f", shadowShape)
             return "$acc.drawShadow".args("$dp.dp", shadowShape)
         }
-        /*TODO: Other parameter: shape: Shape = RectangleShape,
-        clipToOutline: Boolean = elevation > 0.dp,
-        @FloatRange(from = 0.0, to = 1.0) opacity: Float = 1f*/
     }
 
 
