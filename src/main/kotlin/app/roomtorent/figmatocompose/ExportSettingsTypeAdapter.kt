@@ -1,3 +1,9 @@
+package app.roomtorent.figmatocompose
+
+import ExportSettings
+import ExportSettingsImage
+import ExportSettingsPDF
+import ExportSettingsSVG
 import com.beust.klaxon.TypeAdapter
 import java.lang.Exception
 import kotlin.reflect.KClass

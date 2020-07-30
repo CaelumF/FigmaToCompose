@@ -1,3 +1,14 @@
+package app.roomtorent.figmatocompose
+
+import BaseNodeMixin
+import BaseNodeMixinImpl
+import ComponentNode
+import FrameNode
+import GroupNodeImpl
+import InstanceNode
+import RectangleNode
+import TextNode
+import VectorNode
 import com.beust.klaxon.TypeAdapter
 import kotlin.reflect.KClass
 
