@@ -4,7 +4,7 @@ Easily convert [Figma](https://www.figma.com/) designs directly to [Jetpack Comp
 This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
 to Jetpack Compose and sets the clipboard to it
 
-Jetpack Compose: Dev14
+Jetpack Compose: Dev15
 Figma release: June 25th 2020
 
 # Usage:
