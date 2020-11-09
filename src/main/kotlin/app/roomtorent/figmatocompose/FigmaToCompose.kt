@@ -59,7 +59,6 @@ fun Application.main() {
         anyHost()
     }
     install(CallLogging)
-    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
 
     routing {
         post("/") {
@@ -109,6 +108,7 @@ fun Application.main() {
                 call.respond(output)
                 if (convertRequest.copyToClipboard == true) {
                     println("Processed one, setting clipboard to output :) ")
+                    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
                     val selection = StringSelection(output)
                     clipboard.setContents(selection, selection)
                 }
@@ -241,7 +241,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (ModifierChain.() -> Unit)?
                         else -> throw Exception("Alignment ${node.textAlignVertical} must be new")
                     })
                 },
-                        "style = currentTextStyle().copy".args(
+                        "style = AmbientTextStyle.current.copy".args(
                                 "color = " + when (this.fills?.get(0)?.type) {
                                     "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
                                         this.color.toComposeColor(node.opacity.toFloat())

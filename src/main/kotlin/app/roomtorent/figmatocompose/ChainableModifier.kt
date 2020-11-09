@@ -219,7 +219,7 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
 
 
     class Gravity(var alignment: AlignmentOption) : ChainableModifier() {
-        override fun addToChain(acc: String) = acc + ".gravity(Alignment.${alignment.name})"
+        override fun addToChain(acc: String) = acc + ".align(Alignment.${alignment.name})"
     }
 
     class DrawBackground(var color: RGBA, var opacityOverride: Float? = null) : ChainableModifier() {

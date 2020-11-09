@@ -1,63 +1,31 @@
 # Designs to Jetpack Compose converter
 Easily convert [Figma](https://www.figma.com/) designs directly to [Jetpack Compose](https://developer.android.com/jetpack/compose) code. (Not affiliated with either of them)
 
-This project contains a plugin that sends the selected Figma json to locahost:9020, and a kotlin backend that converts this json
+This project contains a plugin that sends the selected Figma json to localhost:9020, and a kotlin backend that converts this json
 to Jetpack Compose and sets the clipboard to it
 
-Jetpack Compose: Dev15
-Figma release: June 25th 2020
+See a video and lacking css at the [github io page](https://caelumf.github.io/FigmaToCompose/)
+
+## Version compatibility
+This works surprisingly well even when several versions outdated with the latest JetPack Compose. A few modifiers may be deprecated, but you can use
+Android Studio to automatically replace them.
+
+The latest Compose version I personally have used it with is:
+Jetpack Compose: Alpha 06
 
 # Usage:
 With the [plugin](https://www.figma.com/community/plugin/856651176156241740/Figma-to-Compose) installed, start the server by cloning this repo, cd-ing into it and running:
 
+For Linux or Mac OSX
 `./gradlew run --args="-config=application.conf"`
 
-
-The outputted code makes usage of some utility functions, so you'll need this pasted into a file in your project:
-(this next code snippet is CC0 / all of my rights waived)
-```kotlin
-
-import androidx.compose.Composable
-import androidx.ui.core.DensityAmbient
-import androidx.ui.core.LayoutDirection
-import androidx.ui.layout.Arrangement
-import androidx.ui.unit.Dp
-
-fun vSpacingArrangement(spacingPx: Int): Arrangement.Vertical = object : Arrangement.Vertical {
-
-    override fun arrange(totalSize: Int, size: List<Int>): List<Int> {
-        val positions = mutableListOf<Int>()
-        var current = 0
-        size.forEach {
-            positions.add(current)
-            current += it + spacingPx
-        }
-        return positions
-    }
-}
-fun hSpacingArrangement(spacingPx: Int): Arrangement.Horizontal = object : Arrangement.Horizontal {
-
-    override fun arrange(
-        totalSize: Int,
-        size: List<Int>,
-        layoutDirection: LayoutDirection
-    ): List<Int> {
-        val positions = mutableListOf<Int>()
-        var current = 0
-        size.forEach {
-            positions.add(current)
-            current += it + spacingPx
-        }
-        return positions
-    }
-}
-
-@Composable
-fun Dp.toIntInPx(): Int = with(DensityAmbient.current) {
-    return@toIntInPx this@toIntInPx.toIntPx()
-}
-
-```
+For Windows
+`wsl`
+`bash`
+`dos2unix gradlew`
+`./gradlew run --args="-config=application.conf"`
+When using the plugin with a Windows plugin, disable copy to clipboard or else it will crash from being unable to find an X11 server's clipboard to access, and
+if it can it's probably not very useful
 
 This requires a JDK installed, if you're doing Android dev it probably already is :)
 
