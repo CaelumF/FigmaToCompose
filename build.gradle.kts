@@ -6,7 +6,7 @@
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
 
     // Apply the application plugin to add support for building a CLI application.
     application
@@ -44,7 +44,8 @@ dependencies {
     implementation("com.beust:klaxon:5.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
-//                implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("com.squareup:kotlinpoet:1.9.0")
+
     implementation("io.ktor:ktor-server-jetty:$ktorVersion")
     implementation("io.ktor:ktor-network-tls:$ktorVersion")
 }

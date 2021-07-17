@@ -741,6 +741,7 @@ interface DefaultFrameMixin : Serializable, BaseNodeMixin, SceneNodeMixin, React
     GeometryMixin, CornerMixin, RectangleCornerMixin, BlendMixin, ConstraintMixin, LayoutMixin, ExportMixin {
     val layoutMode: String? /* "NONE" | "HORIZONTAL" | "VERTICAL" */
     val counterAxisSizingMode: String /* "FIXED" | "AUTO" */?
+    val counterAxisAlignItems: String /* "MIN" | "CENTER" | "MAX" */?
     val horizontalPadding: Double?
     val verticalPadding: Double?
     val itemSpacing: Double?
@@ -890,6 +891,7 @@ open class FrameNode(
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
     override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
+    override val counterAxisAlignItems: String? = null,
 
     ) : Serializable, DefaultFrameMixin {
 
@@ -1512,6 +1514,7 @@ open class ComponentNode(
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
     override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
+    override val counterAxisAlignItems: String? = null,
 ) : Serializable, DefaultFrameMixin {
 
     override val x: Double
@@ -1600,6 +1603,7 @@ open class InstanceNode(
     val realwidth: Double? = width,
     val realheight: Double? = height, override val exportSettings: Array<ExportSettings>? = null,
     override val effects: Array<Effect>? = null, override val strokes: Array<Paint> = arrayOf<Paint>(),
+    override val counterAxisAlignItems: String? = null,
 
     ) : Serializable, DefaultFrameMixin {
 

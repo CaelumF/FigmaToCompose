@@ -19,12 +19,12 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
         var combined = ownModifiers.apply { if (this.isNotEmpty() && inheritedModifiers.isNotEmpty()) add(CustomModSeparator()) } + inheritedModifiers
         if (combined.filterNot { it is CustomModSeparator || it is None }.isEmpty()) return "Modifier"
         if (Settings.Optimizations.omitExtraShadows) {
-            val biggestShadow: DrawShadow? = combined
-                    .filterIsInstance<DrawShadow>()
+            val biggestShadow: Shadow? = combined
+                    .filterIsInstance<Shadow>()
                     .maxBy { it.dp }
             if (biggestShadow != null) {
                 val withOnlyBiggestShadow: List<ChainableModifier> = combined
-                        .filter { it !is DrawShadow }
+                        .filter { it !is Shadow }
                         .apply { (this as ArrayList<ChainableModifier>).add(biggestShadow) }
                 combined = withOnlyBiggestShadow
             }
@@ -77,16 +77,16 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
         override fun addToChain(acc: String) = acc + ".drawOpacity(${amount}f)"
     }
 
-    class PreferredSize(val widthDp: Number, val heightDp: Number) : ChainableModifier() {
-        override fun addToChain(acc: String) = "$acc.preferredSize($widthDp.dp, $heightDp.dp)"
+    class Size(val widthDp: Number, val heightDp: Number) : ChainableModifier() {
+        override fun addToChain(acc: String) = "$acc.size($widthDp.dp, $heightDp.dp)"
     }
 
-    class PreferredWidth(var widthDp: Number) : ChainableModifier() {
-        override fun addToChain(acc: String) = "$acc.preferredWidth($widthDp.dp)"
+    class Width(var widthDp: Number) : ChainableModifier() {
+        override fun addToChain(acc: String) = "$acc.width($widthDp.dp)"
     }
 
-    class PreferredHeight(var heightDp: Number) : ChainableModifier() {
-        override fun addToChain(acc: String) = "$acc.preferredHeight($heightDp.dp)"
+    class Height(var heightDp: Number) : ChainableModifier() {
+        override fun addToChain(acc: String) = "$acc.height($heightDp.dp)"
     }
 
     class FillMaxHeight() : ChainableModifier() {
@@ -157,7 +157,7 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
             var width: Float,
             var gradientTransform: ArrayList<ArrayList<Double>>? = null
     ) : ChainableModifier() {
-        override fun addToChain(acc: String) = acc + ".drawBackground".args(
+        override fun addToChain(acc: String) = acc + ".background".args(
                 "HorizontalGradient".args(
                         stops.joinToString { "${it.position}f to ${it.color?.toComposeColor()}" },
                         "startX = 0f",
@@ -189,10 +189,10 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
      */
     fun constrainAs(tagName: String, composeConstraintCode: String, removeSizeModifiers: Boolean = true) {
         ownModifiers.add(ConstrainAs(tagName, composeConstraintCode))
-        if (removeSizeModifiers) ownModifiers.removeIf { it is PreferredWidth || it is PreferredHeight || it is PreferredSize }
+        if (removeSizeModifiers) ownModifiers.removeIf { it is Width || it is Height || it is Size }
     }
 
-    class DrawShadow(var dp: Float, val modifierChain: ModifierChain) : ChainableModifier() {
+    class Shadow(var dp: Float, val modifierChain: ModifierChain) : ChainableModifier() {
         // Should be before background, but after clip/rounded corner
         override var order = -10000
 
@@ -212,8 +212,8 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
                 else -> ""
             }
             if (Settings.Optimizations.avoidAndroidShadowOptimization)
-                return "$acc.drawShadow".args("$dp.dp", "opacity = 0.99f", shadowShape)
-            return "$acc.drawShadow".args("$dp.dp", shadowShape)
+                return "$acc.shadow".args("$dp.dp", "opacity = 0.99f", shadowShape)
+            return "$acc.shadow".args("$dp.dp", shadowShape)
         }
     }
 
@@ -222,8 +222,8 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
         override fun addToChain(acc: String) = acc + ".align(Alignment.${alignment.name})"
     }
 
-    class DrawBackground(var color: RGBA, var opacityOverride: Float? = null) : ChainableModifier() {
-        override fun addToChain(acc: String) = acc + ".drawBackground(${color.toComposeColor(opacityOverride)})"
+    class Background(var color: RGBA, var opacityOverride: Float? = null) : ChainableModifier() {
+        override fun addToChain(acc: String) = acc + ".background(${color.toComposeColor(opacityOverride)})"
     }
 
     class WrapContentSize() : ChainableModifier() {
@@ -257,11 +257,11 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
 
     fun drawOpacity(amount: Float) = ownModifiers.add(DrawOpacity(amount))
 
-    fun preferredSize(widthDp: Number, heightDp: Number) = ownModifiers.add(PreferredSize(widthDp, heightDp))
+    fun size(widthDp: Number, heightDp: Number) = ownModifiers.add(Size(widthDp, heightDp))
 
-    fun preferredWidth(widthDp: Number) = ownModifiers.add(PreferredWidth(widthDp))
+    fun preferredWidth(widthDp: Number) = ownModifiers.add(Width(widthDp))
 
-    fun preferredHeight(heightDp: Number) = ownModifiers.add(PreferredHeight(heightDp))
+    fun preferredHeight(heightDp: Number) = ownModifiers.add(Height(heightDp))
 
     fun fillMaxHeight() = ownModifiers.add(FillMaxHeight())
 
@@ -275,15 +275,15 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
 
     fun none() = ownModifiers.add(None())
 
-    fun drawShadow(dp: Float) = ownModifiers.add(DrawShadow(dp, this))
+    fun shadow(dp: Float) = ownModifiers.add(Shadow(dp, this))
 
 
     fun gravity(alignment: AlignmentOption) = ownModifiers.add(Gravity(alignment))
 
-    fun referredSize(widthDp: Number, heightDp: Number) = PreferredSize(widthDp, heightDp)
+    fun referredSize(widthDp: Number, heightDp: Number) = Size(widthDp, heightDp)
 
-    fun drawBackground(color: RGBA, opacityOverride: Float? = null) =
-            ownModifiers.add(DrawBackground(color, opacityOverride))
+    fun background(color: RGBA, opacityOverride: Float? = null) =
+            ownModifiers.add(Background(color, opacityOverride))
 
     fun customModSeparator() = ownModifiers.add(CustomModSeparator())
     fun addPassedProperties() = ownModifiers.add(ClassProperties())
@@ -300,14 +300,14 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
                                         this.gradientStops ?: arrayOf(), (node as LayoutMixin).width.toFloat()
                                 )
                             }
-                            fill is SolidPaint -> drawBackground(fill.color, fill.opacity.toFloat())
+                            fill is SolidPaint -> background(fill.color, fill.opacity.toFloat())
                         }
                     }
         }
         if (node is BlendMixin) {
             node.effects?.forEach { effect ->
                 when (effect) {
-                    is ShadowEffect -> drawShadow(
+                    is ShadowEffect -> shadow(
                             effect.radius?.toFloat()
                                     ?: throw java.lang.Exception("Has shadow effect but shadow effect has null radius")
                     )

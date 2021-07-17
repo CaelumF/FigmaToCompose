@@ -66,6 +66,7 @@ fun Application.main() {
             val nodeJsonToConvert = call.receive<String>();
             try {
                 val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
+                println(nodeJsonToConvert)
                 if (convertRequest.test == true) {
                     call.respond(HttpStatusCode.Accepted, "")
                     return@post;
@@ -75,6 +76,7 @@ fun Application.main() {
                     composables = hashMapOf()
                 }
 
+                println(convertRequest.rootiestNode.toString())
                 val mainComposableContent = makeCompose(convertRequest.rootiestNode
                         ?: throw Exception("Incomplete request")) {
                     fillMaxSize()
@@ -87,7 +89,7 @@ fun Application.main() {
                         @Composable()
                         @Preview()
                         fun AndroidPreview_$identifier() {
-                            Box(Modifier.preferredSize(360.dp, 640.dp)) {
+                            Box(Modifier.size(360.dp, 640.dp)) {
                                 $identifier()
                             }
                         }
@@ -181,8 +183,8 @@ fun frameOrAutoLayoutToCompose(node: DefaultFrameMixin, extraModifiers: (Modifie
  */
 fun vectorFrameToCompose(node: DefaultFrameMixin, extraModifiers: (ModifierChain.() -> Unit)?): String {
     val exportSettings = node.exportSettings!!.any { it is ExportSettingsSVG }
-    return "Image".args("asset = ${"vectorResource".args("id = R.drawable.${node.name?.toKotlinIdentifier()?.toLowerCase()}")}", "modifier = ${Mods(extraModifiers = extraModifiers) {
-        preferredSize(node.width, node.height)
+    return "Image".args("painter = ${"painterResource".args("id = R.drawable.${node.name?.toKotlinIdentifier()?.toLowerCase()}")}","contentDescription = \"\"", "modifier = ${Mods(extraModifiers = extraModifiers) {
+        size(node.width, node.height)
         addStyleMods(node)
     }}")
 }
@@ -217,7 +219,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (ModifierChain.() -> Unit)?
         is RectangleNode -> with(node) {
             """
                Box(${Mods(extraModifiers) {
-                preferredSize(
+                size(
                         width,
                         height
                 )
@@ -241,7 +243,7 @@ fun makeCompose(node: BaseNodeMixin, extraModifiers: (ModifierChain.() -> Unit)?
                         else -> throw Exception("Alignment ${node.textAlignVertical} must be new")
                     })
                 },
-                        "style = AmbientTextStyle.current.copy".args(
+                        "style = LocalTextStyle.current.copy".args(
                                 "color = " + when (this.fills?.get(0)?.type) {
                                     "SOLID" -> with(this.fills?.get(0) as SolidPaint) {
                                         this.color.toComposeColor(node.opacity.toFloat())

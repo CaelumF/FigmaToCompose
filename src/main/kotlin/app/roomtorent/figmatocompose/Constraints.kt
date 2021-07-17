@@ -148,7 +148,7 @@ fun childrenMixinToConstraintsLayout(node: ConstraintMixin, extraModifiers: (Mod
 
     if(constraintChildren.isEmpty()) return "Box(${Mods(extraModifiers) { addStyleMods(node) }})"
     return """
-            ConstraintLayout(${Mods(extraModifiers) { addStyleMods(node) }}) {
+            ConstraintLayout(modifier = ${Mods(extraModifiers) { addStyleMods(node) }}) {
                 val (${constraintReferences.joinToString(separator = ", ")}) = createRefs()
                 $createComposeReferencesCode
                 
