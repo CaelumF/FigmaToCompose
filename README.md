@@ -11,7 +11,7 @@ This works surprisingly well even when several versions outdated with the latest
 Android Studio to automatically replace them.
 
 The latest Compose version I personally have used it with is:
-Jetpack Compose: Alpha 06
+Jetpack Compose: rc-02
 
 # Usage:
 With the [plugin](https://www.figma.com/community/plugin/856651176156241740/Figma-to-Compose) installed, start the server by cloning this repo, cd-ing into it and running:
