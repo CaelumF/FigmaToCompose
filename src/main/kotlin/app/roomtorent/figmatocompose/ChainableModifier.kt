@@ -21,7 +21,7 @@ class ModifierChain(modifiersFromParent: (ModifierChain.() -> Unit)? = null) {
         if (Settings.Optimizations.omitExtraShadows) {
             val biggestShadow: Shadow? = combined
                     .filterIsInstance<Shadow>()
-                    .maxBy { it.dp }
+                    .maxByOrNull { it.dp }
             if (biggestShadow != null) {
                 val withOnlyBiggestShadow: List<ChainableModifier> = combined
                         .filter { it !is Shadow }

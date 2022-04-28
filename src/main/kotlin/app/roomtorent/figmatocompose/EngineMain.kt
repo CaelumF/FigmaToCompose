@@ -4,11 +4,10 @@
 
 package app.roomtorent.figmatocompose
 
-import io.ktor.config.*
+import io.ktor.server.config.*
 import io.ktor.server.engine.*
-import io.ktor.server.jetty.JettyApplicationEngine
-import io.ktor.server.jetty.JettyApplicationEngineBase
-import java.util.concurrent.*
+import io.ktor.server.jetty.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Jetty engine

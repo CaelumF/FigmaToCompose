@@ -13,22 +13,26 @@ import SolidPaint
 import TextNode
 import VectorNode
 import com.beust.klaxon.Klaxon
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.CORS
-import io.ktor.features.CallLogging
-import io.ktor.features.DefaultHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.post
-import io.ktor.routing.routing
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.cors.*
+import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
-import java.io.*
-import java.util.HashMap
+import java.io.File
+import java.io.FileInputStream
+import java.io.ObjectInputStream
+import kotlin.collections.HashMap
+import kotlin.collections.any
+import kotlin.collections.getOrPut
+import kotlin.collections.hashMapOf
+import kotlin.collections.joinToString
+import kotlin.collections.set
 
 fun readFromFile(filePath: String) = ObjectInputStream(FileInputStream(File(filePath))).readObject() as FigmaFile
 
@@ -43,7 +47,7 @@ class Settings private constructor() {
     }
 }
 
-class ConvertRequest() {
+class ConvertRequest {
     val test: Boolean? = null
     var rootiestNode: BaseNodeMixin? = null
     var copyToClipboard: Boolean? = null
@@ -54,38 +58,41 @@ class ConvertRequest() {
 
 fun Application.main() {
     println("Starting figma to compose server...")
-    install(DefaultHeaders)
-    install(CORS) {
-        anyHost()
-    }
-    install(CallLogging)
 
-    routing {
-        post("/") {
+        install(DefaultHeaders)
+        install(CORS) {
+            anyHost()
+        }
+        install(CallLogging)
 
-            val nodeJsonToConvert = call.receive<String>();
-            try {
-                val convertRequest = Klaxon().parse<ConvertRequest>(StringBufferInputStream(nodeJsonToConvert))!!
-                println(nodeJsonToConvert)
-                if (convertRequest.test == true) {
-                    call.respond(HttpStatusCode.Accepted, "")
-                    return@post;
-                }
-                if (convertRequest.resetDecollisionMap == true) {
-                    decollisionMap = hashMapOf()
-                    composables = hashMapOf()
-                }
+        routing {
+            post("/") {
 
-                println(convertRequest.rootiestNode.toString())
-                val mainComposableContent = makeCompose(convertRequest.rootiestNode
-                        ?: throw Exception("Incomplete request")) {
-                    fillMaxSize()
-                }.removeNoAffectPatterns()
+                val nodeJsonToConvert = call.receive<String>()
+                try {
+                    val convertRequest = Klaxon().parse<ConvertRequest>(nodeJsonToConvert)!!
+                    println(nodeJsonToConvert)
+                    if (convertRequest.test == true) {
+                        call.respond(HttpStatusCode.Accepted, "")
+                        return@post
+                    }
+                    if (convertRequest.resetDecollisionMap == true) {
+                        decollisionMap = hashMapOf()
+                        composables = hashMapOf()
+                    }
 
-                val identifier = (convertRequest.rootiestNode?.name ?: "unnamed").toKotlinIdentifierDecollisioned()
+                    println(convertRequest.rootiestNode.toString())
+                    val mainComposableContent = makeCompose(
+                        convertRequest.rootiestNode
+                            ?: throw Exception("Incomplete request")
+                    ) {
+                        fillMaxSize()
+                    }.removeNoAffectPatterns()
 
-                val joinedComposables = composables.values.joinToString(separator = "\n")
-                val upperMostComposable = """
+                    val identifier = (convertRequest.rootiestNode?.name ?: "unnamed").toKotlinIdentifierDecollisioned()
+
+                    val joinedComposables = composables.values.joinToString(separator = "\n")
+                    val upperMostComposable = """
                         @Composable()
                         @Preview()
                         fun AndroidPreview_$identifier() {
@@ -100,28 +107,29 @@ fun Application.main() {
                         }
                 """.trimIndent()
 
-                val output = """
+                    val output = """
                     $joinedComposables
         
                     $upperMostComposable
                 """.trimIndent()
                         .removeNoAffectPatterns()
 
-                call.respond(output)
-                if (convertRequest.copyToClipboard == true) {
-                    println("Processed one, setting clipboard to output :) ")
-                    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                    val selection = StringSelection(output)
-                    clipboard.setContents(selection, selection)
-                }
+                    call.respond(output)
+                    if (convertRequest.copyToClipboard == true) {
+                        println("Processed one, setting clipboard to output :) ")
+                        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                        val selection = StringSelection(output)
+                        clipboard.setContents(selection, selection)
+                    }
 
-            } catch (e: Exception) {
-                println("We rockin' an axeception: $e")
-                e.printStackTrace()
+                } catch (e: Exception) {
+                    println("We rockin' an axeception: $e")
+                    e.printStackTrace()
+                }
             }
         }
-    }
-    println("Started server! You can use the plugin to genarate compose code now!")
+        println("Started server! You can use the plugin to genarate compose code now!")
+
 }
 
 
