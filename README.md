@@ -19,11 +19,16 @@ With the [plugin](https://www.figma.com/community/plugin/856651176156241740/Figm
 For Linux or Mac OSX
 `./gradlew run --args="-config=application.conf"`
 
-For Windows
+For Windows, in the terminal with WSL installed
 `wsl`
+
 `bash`
+
 `dos2unix gradlew`
+
 `./gradlew run --args="-config=application.conf"`
+
+
 When using the plugin with a Windows plugin, disable copy to clipboard or else it will crash from being unable to find an X11 server's clipboard to access, and
 if it can it's probably not very useful
 
