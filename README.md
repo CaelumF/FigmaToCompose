@@ -16,6 +16,8 @@ Jetpack Compose: rc-02
 # Usage:
 With the [plugin](https://www.figma.com/community/plugin/856651176156241740/Figma-to-Compose) installed, start the server by cloning this repo, cd-ing into it and running:
 
+(currently seems to depend on JVM 8)
+
 For Linux or Mac OSX
 `./gradlew run --args="-config=application.conf"`
 
